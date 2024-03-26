@@ -105,12 +105,12 @@ rule parcellate_centroids:
     input:
         dlabel=lambda wildcards: config["atlas"][wildcards.atlas],
         surfs=lambda wildcards: expand(
-            config["template_surf"], surf=wildcards.surf, hemi=["L", "R"]
+            config["template_surf"], surf='midthickness', hemi=["L", "R"]
         ),
     params:
         method="MEDIAN",  #medoid vertex -- change to MEAN if want centroid
     output:
-        markers_pscalar="resources/atlas/atlas-{atlas}_surf-{surf}_markers.pscalar.nii",
+        markers_pscalar="resources/atlas/atlas-{atlas}_nodes.pscalar.nii",
     shadow:
         "minimal"
     container:
@@ -118,5 +118,5 @@ rule parcellate_centroids:
     shell:
         "wb_command -surface-coordinates-to-metric {input.surfs[0]} left_coords.shape.gii && "
         "wb_command -surface-coordinates-to-metric {input.surfs[1]} right_coords.shape.gii && "
-        "wb_command -cifti-create-dense-scalar coords.dscalar -left-metric left_coords.shape.gii -right-metric right_coords.shape.gii && "
-        "wb_command -cifti-parcellate coords.dscalar {input.dlabel} COLUMN {output.markers_pscalar} -method {params.method}"
+        "wb_command -cifti-create-dense-scalar coords.dscalar.nii -left-metric left_coords.shape.gii -right-metric right_coords.shape.gii && "
+        "wb_command -cifti-parcellate coords.dscalar.nii {input.dlabel} COLUMN {output.markers_pscalar} -method {params.method}"

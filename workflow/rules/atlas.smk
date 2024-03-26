@@ -2,7 +2,7 @@
 
 rule get_surf_label_from_cifti_atlas:
     input:
-        cifti=lambda wildcards: config["atlas"][wildcards.atlas],
+        cifti=lambda wildcards: config["atlas"][wildcards.atlas]['dlabel'],
     output:
         label_left="resources/atlas/atlas-{atlas}_hemi-L_parc.label.gii",
         label_right="resources/atlas/atlas-{atlas}_hemi-R_parc.label.gii",
@@ -74,7 +74,7 @@ rule merge_lr_dseg:
 
 rule get_label_txt_from_cifti:
     input:
-        cifti=lambda wildcards: config["atlas"][wildcards.atlas],
+        cifti=lambda wildcards: config["atlas"][wildcards.atlas]['dlabel'],
     output:
         label_txt="resources/atlas/atlas-{atlas}_desc-cifti_labels.txt",
     container:
@@ -87,9 +87,10 @@ rule lut_cifti_to_bids:
     input:
         label_txt=rules.get_label_txt_from_cifti.output.label_txt,
     output:
-        label_tsv="resources/atlas/atlas-{atlas}_dseg.tsv",
+        label_tsv=temp("resources/atlas/atlas-{atlas}_desc-nometadata_dseg.tsv"),
     script:
         "../scripts/lut_cifti_to_bids.py"
+
 
 
 rule lut_bids_to_itksnap:
@@ -103,14 +104,14 @@ rule lut_bids_to_itksnap:
 
 rule parcellate_centroids:
     input:
-        dlabel=lambda wildcards: config["atlas"][wildcards.atlas],
+        dlabel=lambda wildcards: config["atlas"][wildcards.atlas]['dlabel'],
         surfs=lambda wildcards: expand(
             config["template_surf"], surf='midthickness', hemi=["L", "R"]
         ),
     params:
         method="MEDIAN",  #medoid vertex -- change to MEAN if want centroid
     output:
-        markers_pscalar="resources/atlas/atlas-{atlas}_nodes.pscalar.nii",
+        coords_pscalar="resources/atlas/atlas-{atlas}_coords.pscalar.nii",
     shadow:
         "minimal"
     container:
@@ -119,4 +120,18 @@ rule parcellate_centroids:
         "wb_command -surface-coordinates-to-metric {input.surfs[0]} left_coords.shape.gii && "
         "wb_command -surface-coordinates-to-metric {input.surfs[1]} right_coords.shape.gii && "
         "wb_command -cifti-create-dense-scalar coords.dscalar.nii -left-metric left_coords.shape.gii -right-metric right_coords.shape.gii && "
-        "wb_command -cifti-parcellate coords.dscalar.nii {input.dlabel} COLUMN {output.markers_pscalar} -method {params.method}"
+        "wb_command -cifti-parcellate coords.dscalar.nii {input.dlabel} COLUMN {output.coords_pscalar} -method {params.method}"
+
+
+rule add_metadata_to_dseg_tsv:
+    input:
+        coords_pscalar="resources/atlas/atlas-{atlas}_coords.pscalar.nii",
+        label_tsv=rules.lut_cifti_to_bids.output.label_tsv,
+    params:
+        network_pattern=lambda wildcards: config['atlas'][wildcards.atlas].get('network_pattern',None)
+    output:
+        label_tsv="resources/atlas/atlas-{atlas}_dseg.tsv",
+    script:
+        '../scripts/add_metadata_to_dseg_tsv.py'
+
+

@@ -139,7 +139,7 @@ rule smooth_cifti:
 rule parcellate_bold:
     input:
         cifti_dtseries=rules.smooth_cifti.output.cifti,
-        cifti_dlabel=lambda wildcards: config["atlas"][wildcards.atlas],
+        cifti_dlabel=lambda wildcards: config["atlas"][wildcards.atlas]['dlabel'],
     params:
         exclude_opt="-exclude-outliers {nstdev} {nstdev}".format(
             nstdev=config["func"]["parcellation"]["n_stdevs_exclude"]

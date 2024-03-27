@@ -8,7 +8,7 @@ def get_dwi_targets():
                     datatype="dwi",
                     den="32k",
                     atlas="{atlas}",
-                    suffix="struc.pconn.png",
+                    suffix="struc.pconn.matrix.png",
                     **config["subj_wildcards"],
                 ),
                 subject=config["subjects"][dataset],
@@ -33,7 +33,7 @@ def get_func_targets():
                     denoise="{denoise}",
                     fwhm="{fwhm}",
                     atlas="{atlas}",
-                    suffix="bold.pconn.png",
+                    suffix="bold.pconn.matrix.png",
                     **config["subj_wildcards"],
                 ),
                 subject=config["subjects"][dataset],
@@ -45,7 +45,6 @@ def get_func_targets():
             )
         )
     return targets
-
 
 
 def get_sfc_targets():

@@ -17,8 +17,8 @@ data = []
 labels = []
 
 #make Background label first
-data.append([0,0,0,0,0])
-labels.append('Background')
+#data.append([0,0,0,0,0])
+#labels.append('Background')
 
 with open(file_path, 'r') as file:
     for idx, line in enumerate(file):

@@ -2,7 +2,7 @@
 
 rule get_surf_label_from_cifti_atlas:
     input:
-        cifti=lambda wildcards: config["atlas"][wildcards.atlas]['dlabel'],
+        cifti=lambda wildcards: config["atlas"][wildcards.atlas]["dlabel"],
     output:
         label_left="resources/atlas/atlas-{atlas}_hemi-L_parc.label.gii",
         label_right="resources/atlas/atlas-{atlas}_hemi-R_parc.label.gii",
@@ -74,13 +74,13 @@ rule merge_lr_dseg:
 
 rule get_label_txt_from_cifti:
     input:
-        cifti=lambda wildcards: config["atlas"][wildcards.atlas]['dlabel'],
+        cifti=lambda wildcards: config["atlas"][wildcards.atlas]["dlabel"],
     output:
         label_txt="resources/atlas/atlas-{atlas}_desc-cifti_labels.txt",
     container:
         config["singularity"]["diffparc"]
     shell:
-        "wb_command -cifti-label-export-table {input} parcels {output}"
+        "wb_command -cifti-label-export-table {input} 1 {output}"
 
 
 rule lut_cifti_to_bids:
@@ -90,7 +90,6 @@ rule lut_cifti_to_bids:
         label_tsv=temp("resources/atlas/atlas-{atlas}_desc-nometadata_dseg.tsv"),
     script:
         "../scripts/lut_cifti_to_bids.py"
-
 
 
 rule lut_bids_to_itksnap:
@@ -104,9 +103,9 @@ rule lut_bids_to_itksnap:
 
 rule parcellate_centroids:
     input:
-        dlabel=lambda wildcards: config["atlas"][wildcards.atlas]['dlabel'],
+        dlabel=lambda wildcards: config["atlas"][wildcards.atlas]["dlabel"],
         surfs=lambda wildcards: expand(
-            config["template_surf"], surf='midthickness', hemi=["L", "R"]
+            config["template_surf"], surf="midthickness", hemi=["L", "R"]
         ),
     params:
         method="MEDIAN",  #medoid vertex -- change to MEAN if want centroid
@@ -128,10 +127,10 @@ rule add_metadata_to_dseg_tsv:
         coords_pscalar="resources/atlas/atlas-{atlas}_coords.pscalar.nii",
         label_tsv=rules.lut_cifti_to_bids.output.label_tsv,
     params:
-        network_pattern=lambda wildcards: config['atlas'][wildcards.atlas].get('network_pattern',None)
+        network_pattern=lambda wildcards: config["atlas"][wildcards.atlas].get(
+            "network_pattern", None
+        ),
     output:
         label_tsv="resources/atlas/atlas-{atlas}_dseg.tsv",
     script:
-        '../scripts/add_metadata_to_dseg_tsv.py'
-
-
+        "../scripts/add_metadata_to_dseg_tsv.py"

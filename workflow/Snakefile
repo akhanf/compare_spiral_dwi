@@ -33,6 +33,7 @@ include: "rules/dwi.smk"
 include: "rules/func.smk"
 include: "rules/hippunfold.smk"
 include: "rules/tabular.smk"
+include: "rules/plotting.smk"
 
 
 rule all:
@@ -40,6 +41,7 @@ rule all:
         get_dwi_targets(),
         get_func_targets(),
         get_sfc_targets(),
+
 
 rule all_dwi:
     input:

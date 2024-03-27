@@ -61,6 +61,11 @@ subjects:
 
 template_surf: 'resources/tpl-fsLR/tpl-fsLR_den-32k_hemi-{hemi}_{surf}.surf.gii'
 
+#atlases to actually use:
+atlases:
+  - schaefer
+
+
 atlas:
   schaefer: 
     dlabel: resources/schaefer_2018/Schaefer2018_300Parcels_7Networks_order.dlabel.nii
@@ -80,7 +85,7 @@ dwi:
     - '8'
     - '8'
 
-  sl_count: 10000
+  sl_count: 1000000
 
  
 func:
@@ -120,6 +125,13 @@ func:
 
 
 netplotbrain:
+  struc:
+    view: 'LSc'
+    edge_thresholddirection: above
+    edge_threshold: 5
+    edge_widthscale: 0.3
+
+
   func:
     view: 'LSc'
     edge_thresholddirection: above

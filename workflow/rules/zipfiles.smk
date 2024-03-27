@@ -1,7 +1,7 @@
 wildcard_constraints:
     subject="[a-zA-Z0-9]+",
-    app="|".join(config['in_agg_zip'].keys()),
-    dataset="[a-zA-Z0-9]+"
+    app="|".join(config["in_agg_zip"].keys()),
+    dataset="[a-zA-Z0-9]+",
 
 
 def get_zip_file(wildcards):

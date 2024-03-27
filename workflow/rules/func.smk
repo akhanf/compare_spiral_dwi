@@ -139,7 +139,7 @@ rule smooth_cifti:
 rule parcellate_bold:
     input:
         cifti_dtseries=rules.smooth_cifti.output.cifti,
-        cifti_dlabel=lambda wildcards: config["atlas"][wildcards.atlas]['dlabel'],
+        cifti_dlabel=lambda wildcards: config["atlas"][wildcards.atlas]["dlabel"],
     params:
         exclude_opt="-exclude-outliers {nstdev} {nstdev}".format(
             nstdev=config["func"]["parcellation"]["n_stdevs_exclude"]
@@ -188,16 +188,6 @@ rule correlate_parcels:
         config["singularity"]["diffparc"]
     shell:
         "wb_command -cifti-correlation {input.cifti} {output.cifti} {params.fisher_z} "
-
-
-rule plot_pconn_png:
-    """generic rule for plotting pconn cifti files"""
-    input:
-        cifti_pconn="{prefix}.pconn.nii",
-    output:
-        png="{prefix}.pconn.png",
-    script:
-        "../scripts/plot_pconn_png.py"
 
 
 rule struc_conn_csv_to_pconn_cifti:
@@ -281,40 +271,3 @@ rule calc_sfc:
         ),
     script:
         "../scripts/calc_sfc.py"
-
-
-rule plot_sfc_markers_png:
-    """plot sfc using markers on glass brain"""
-    input:
-        pscalar_sfc=bids(
-            root=root,
-            datatype="func",
-            desc="preproc",
-            den="32k",
-            task="{task}",
-            denoise="{denoise}",
-            fwhm="{fwhm}",
-            atlas="{atlas}",
-            suffix="sfc.pscalar.nii",
-            **config["subj_wildcards"]
-        ),
-        pscalar_markers="resources/atlas/atlas-{atlas}_surf-{surf}_markers.pscalar.nii",
-        surfs=lambda wildcards: expand(
-            config["template_surf"], surf=wildcards.surf, hemi=["L", "R"]
-        ),
-    output:
-        png=bids(
-            root=root,
-            datatype="func",
-            desc="preproc",
-            den="32k",
-            task="{task}",
-            denoise="{denoise}",
-            fwhm="{fwhm}",
-            atlas="{atlas}",
-            surf="{surf}",
-            suffix="sfc.markerplot.png",
-            **config["subj_wildcards"]
-        ),
-    script:
-        "../scripts/plot_sfc_markers_png.py"

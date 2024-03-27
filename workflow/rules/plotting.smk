@@ -124,6 +124,8 @@ rule plot_func_chord:
             **config["subj_wildcards"]
         ),
         label_tsv="resources/atlas/atlas-{atlas}_dseg.tsv",
+    params:
+        opts=config['nichord']['func']
     output:
         png=bids(
             root=root,
@@ -154,8 +156,7 @@ rule plot_struc_chord:
         ),
         label_tsv="resources/atlas/atlas-{atlas}_dseg.tsv",
     params:
-        template="MNI152NLin6Asym",  #closest to fsLR surfs
-        opts=config["netplotbrain"]["struc"],
+        opts=config['nichord']['struc']
     output:
         png=bids(
             root=root,

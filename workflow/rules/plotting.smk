@@ -78,4 +78,94 @@ rule plot_func_network:
             **config["subj_wildcards"]
         ),
     script:
-        "../scripts/plot_func_network.py"
+        "../scripts/plot_network.py"
+
+
+rule plot_struc_network:
+    input:
+        pconn=bids(
+            root=root,
+            datatype="dwi",
+            den="32k",
+            atlas="{atlas}",
+            suffix="struc.pconn.nii",
+            **config["subj_wildcards"],
+        ),
+        label_tsv="resources/atlas/atlas-{atlas}_dseg.tsv",
+    params:
+        template="MNI152NLin6Asym",  #closest to fsLR surfs
+        opts=config["netplotbrain"]["struc"],
+    output:
+        png=bids(
+            root=root,
+            datatype="dwi",
+            den="32k",
+            atlas="{atlas}",
+            suffix="struc.pconn.network.png",
+            **config["subj_wildcards"],
+        ),
+    script:
+        "../scripts/plot_network.py"
+
+
+
+rule plot_func_chord:
+    input:
+        pconn=bids(
+            root=root,
+            datatype="func",
+            desc="preproc",
+            den="32k",
+            task="{task}",
+            denoise="{denoise}",
+            fwhm="{fwhm}",
+            atlas="{atlas}",
+            suffix="bold.pconn.nii",
+            **config["subj_wildcards"]
+        ),
+        label_tsv="resources/atlas/atlas-{atlas}_dseg.tsv",
+    output:
+        png=bids(
+            root=root,
+            datatype="func",
+            desc="preproc",
+            den="32k",
+            task="{task}",
+            denoise="{denoise}",
+            fwhm="{fwhm}",
+            atlas="{atlas}",
+            suffix="bold.pconn.chord.png",
+            **config["subj_wildcards"]
+        ),
+    script:
+        "../scripts/plot_chord.py"
+
+
+
+rule plot_struc_chord:
+    input:
+        pconn=bids(
+            root=root,
+            datatype="dwi",
+            den="32k",
+            atlas="{atlas}",
+            suffix="struc.pconn.nii",
+            **config["subj_wildcards"],
+        ),
+        label_tsv="resources/atlas/atlas-{atlas}_dseg.tsv",
+    params:
+        template="MNI152NLin6Asym",  #closest to fsLR surfs
+        opts=config["netplotbrain"]["struc"],
+    output:
+        png=bids(
+            root=root,
+            datatype="dwi",
+            den="32k",
+            atlas="{atlas}",
+            suffix="struc.pconn.chord.png",
+            **config["subj_wildcards"],
+        ),
+    script:
+        "../scripts/plot_chord.py"
+
+

@@ -19,7 +19,11 @@ else:
     
 
 
+opts = snakemake.params.opts
+
 edges,edge_weights = convert_matrix(conn_matrix)
+
+edge_weights = edge_weights * opts['edge_widthscale']
 
 plot_chord(idx_to_label=idx_to_label,edges=edges,
            edge_weights=edge_weights,

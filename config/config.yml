@@ -123,13 +123,18 @@ func:
         - steady_state_outlier
 
 
+nichord:
+  struc:
+    edge_widthscale: 0.001
+  func:
+    edge_widthscale: 0.001
 
 netplotbrain:
   struc:
     view: 'LSc'
     edge_thresholddirection: above
-    edge_threshold: 5
-    edge_widthscale: 0.3
+    edge_threshold: 100
+    edge_widthscale: 0.001
 
 
   func:

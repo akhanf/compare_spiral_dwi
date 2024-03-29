@@ -31,6 +31,7 @@ include: "rules/atlas.smk"
 include: "rules/dwi.smk"
 include: "rules/func.smk"
 include: "rules/hippunfold.smk"
+include: "rules/tabular.smk"
 
 
 rule all:

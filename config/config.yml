@@ -8,6 +8,10 @@ in_agg_zip:
     HCP: '/home/ROBARTS/alik/graham/projects/ctb-akhanf-ab/cfmm-bids/Khan/LOBE/derivatives/snakebatch_HCP_snakeanat_fmriprep_2024_03_21.zip'
     LOBE: '/home/ROBARTS/alik/graham/projects/ctb-akhanf-ab/cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_2024_03_19.zip'
 
+in_demog_tabular:
+  HCP: '/home/ROBARTS/alik/graham/ext-data/hcp_development/HCPDevImagingManifestBeh/ndar_subject01.txt'
+
+
   
 
 #to find paths below, use: unzip -l /home/ROBARTS/alik/graham/cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_HCP_2023_09_23.zip | less
@@ -32,6 +36,8 @@ input_path:
   surf_gii_t1: 'snakebatch/{dataset}/derivatives/snakeanat/sourcedata/ciftify/sub-{subject}/T1w/fsaverage_LR32k/sub-{subject}.{hemi}.{surf}.32k_fs_LR.surf.gii'
   surf_gii_mni: 'snakebatch/{dataset}/derivatives/snakeanat/sourcedata/ciftify/sub-{subject}/MNINonLinear/fsaverage_LR32k/sub-{subject}.{hemi}.{surf}.32k_fs_LR.surf.gii'
   hippunfold_vol_tsv: 'snakebatch/{dataset}/derivatives/hippunfold/hippunfold/sub-{subject}/anat/sub-{subject}_space-cropT1w_desc-subfields_atlas-bigbrain_volumes.tsv'
+
+
 
 
 root: results

@@ -6,7 +6,7 @@ rule plot_pconn_png:
     output:
         png="{prefix}.pconn.matrix.png",
     group:
-        "plotting"
+        "grouped_subject"
     script:
         "../scripts/plot_pconn_png.py"
 

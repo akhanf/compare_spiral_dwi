@@ -6,7 +6,7 @@ wildcard_constraints:
 
 def get_zip_file(wildcards):
     if wildcards.app in config["in_agg_zip"]:
-        return config["in_agg_zip"][wildcards.app][wildcards.dataset]
+        return os.path.join(in_root,config["in_agg_zip"][wildcards.app][wildcards.dataset])
     else:
         print(
             f"ERROR: cannot find zip file for {wildcards.app}/{wildcards.dataset} in config['in_agg_zip']"

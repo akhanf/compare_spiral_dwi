@@ -22,7 +22,8 @@ subjects = {
     for dataset in config["datasets"]
 }
 
-root = os.path.join(config["root"], "{dataset}")
+root = os.path.join(os.path.expandvars(config["root"]),"{dataset}")
+in_root = os.path.expandvars(config["in_root"])
 
 
 include: "rules/common.smk"

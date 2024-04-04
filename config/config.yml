@@ -53,11 +53,18 @@ datasets:
   - HCP
   - LOBE
 
-subjects: 
+use_test_subjects: True
+
+test_subjects: 
   HCP:
    - 'HCD0277447'
+   - 'HCD0021614'
+   - 'HCD0026119'
+
   LOBE:
    - '007'
+   - '009'
+   - '010'
 
 template_surf: 'resources/tpl-fsLR/tpl-fsLR_den-32k_hemi-{hemi}_{surf}.surf.gii'
 

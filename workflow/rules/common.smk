@@ -11,7 +11,7 @@ def get_dwi_targets():
                     suffix="struc.pconn.{plottype}.png",
                     **config["subj_wildcards"],
                 ),
-                subject=config["subjects"][dataset],
+                subject=subjects[dataset],
                 dataset=dataset,
                 plottype=["matrix", "network", "chord"],
                 atlas=config["atlases"],
@@ -37,7 +37,7 @@ def get_func_targets():
                     suffix="bold.pconn.{plottype}.png",
                     **config["subj_wildcards"],
                 ),
-                subject=config["subjects"][dataset],
+                subject=subjects[dataset],
                 dataset=dataset,
                 task=config["func"]["task"],
                 denoise=config["func"]["denoise"].keys(),
@@ -66,7 +66,7 @@ def get_sfc_targets():
                     suffix="sfc.pscalar.nii",
                     **config["subj_wildcards"],
                 ),
-                subject=config["subjects"][dataset],
+                subject=subjects[dataset],
                 dataset=dataset,
                 task=config["func"]["task"],
                 denoise=config["func"]["denoise"].keys(),
@@ -76,3 +76,4 @@ def get_sfc_targets():
         )
 
     return targets
+

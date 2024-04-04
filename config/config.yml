@@ -1,20 +1,23 @@
 
-#files in one big zip file
+in_root: '/home/ROBARTS/alik/graham' #for cbs server
+#in_root: '/home/akhanf' #for graham
+
+#files in one big zip file - these paths are relative to in_root defined above
 in_agg_zip: 
   snakebatch_dwi:
-    HCP: '/home/ROBARTS/alik/graham/cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_HCP_2023_09_23.zip'
-    LOBE: '/home/ROBARTS/alik/graham/projects/ctb-akhanf-ab/cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_2024_03_19.zip'
+    HCP: 'projects/ctb-akhanf/cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_HCP_2023_09_23.zip'
+    LOBE: 'projects/ctb-akhanf-ab/cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_2024_03_19.zip'
   snakebatch:
-    HCP: '/home/ROBARTS/alik/graham/projects/ctb-akhanf-ab/cfmm-bids/Khan/LOBE/derivatives/snakebatch_HCP_snakeanat_fmriprep_2024_03_21.zip'
-    LOBE: '/home/ROBARTS/alik/graham/projects/ctb-akhanf-ab/cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_2024_03_19.zip'
+    HCP: 'projects/ctb-akhanf-ab/cfmm-bids/Khan/LOBE/derivatives/snakebatch_HCP_snakeanat_fmriprep_2024_03_21.zip'
+    LOBE: 'projects/ctb-akhanf-ab/cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_2024_03_19.zip'
 
 in_demog_tabular:
-  HCP: '/home/ROBARTS/alik/graham/ext-data/hcp_development/HCPDevImagingManifestBeh/ndar_subject01.txt'
+  HCP: 'projects/ctb-akhanf/ext-data/hcp_development/HCPDevImagingManifestBeh/ndar_subject01.txt'
 
 
   
 
-#to find paths below, use: unzip -l /home/ROBARTS/alik/graham/cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_HCP_2023_09_23.zip | less
+#to find paths below, use: unzip -l cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_HCP_2023_09_23.zip | less
 input_path: 
   dwi_nii: 'snakebatch_dwi/{dataset}/derivatives/snakedwi/snakedwi/sub-{subject}/dwi/sub-{subject}_space-T1w_res-orig_desc-eddy_dwi.nii.gz'
   dwi_mask: 'snakebatch_dwi/{dataset}/derivatives/snakedwi/snakedwi/sub-{subject}/dwi/sub-{subject}_space-T1w_res-orig_desc-brain_mask.nii.gz'
@@ -39,7 +42,7 @@ input_path:
 
 
 
-
+#this is the output folder
 root: results
 
 subj_wildcards:

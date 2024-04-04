@@ -31,10 +31,12 @@ rule map_bold_to_surface_fsLR:
             den="32k",
             task="{task}",
             suffix="bold.dtseries.func.gii",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
     container:
         config["singularity"]["diffparc"]
+    group:
+        "grouped_subject"
     shell:
         "wb_command -volume-to-surface-mapping {input.bold_preproc} {input.mid_surf}  {output.metric} -ribbon-constrained {input.white_surf} {input.pial_surf}"
 
@@ -49,7 +51,7 @@ rule create_bold_cifti:
             den="32k",
             task="{task}",
             suffix="bold.dtseries.func.gii",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
         right_metric=bids(
             root=root,
@@ -59,7 +61,7 @@ rule create_bold_cifti:
             den="32k",
             task="{task}",
             suffix="bold.dtseries.func.gii",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
     output:
         cifti=bids(
@@ -69,10 +71,12 @@ rule create_bold_cifti:
             den="32k",
             task="{task}",
             suffix="bold.dtseries.nii",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
     container:
         config["singularity"]["diffparc"]
+    group:
+        "grouped_subject"
     shell:
         "wb_command -cifti-create-dense-timeseries {output.cifti} -left-metric {input.left_metric} -right-metric {input.right_metric} "
 
@@ -95,13 +99,13 @@ rule denoise_cifti:
             task="{task}",
             denoise="{denoise}",
             suffix="bold.dtseries.nii",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
     group:
-        "subj"
+        "grouped_subject"
     threads: 8
     resources:
-        mem_mb="32000",
+        mem_mb=32000,
     script:
         "../scripts/denoise_cifti.py"
 
@@ -127,10 +131,12 @@ rule smooth_cifti:
             denoise="{denoise}",
             fwhm="{fwhm}",
             suffix="bold.dtseries.nii",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
     container:
         config["singularity"]["diffparc"]
+    group:
+        "grouped_subject"
     shell:
         "wb_command -cifti-smoothing {input.cifti} {params.fwhm} {params.fwhm} COLUMN "
         " {output.cifti} -fwhm -left-surface {input.left_surf} -right-surface {input.right_surf}"
@@ -141,11 +147,13 @@ rule parcellate_bold:
         cifti_dtseries=rules.smooth_cifti.output.cifti,
         cifti_dlabel=lambda wildcards: config["atlas"][wildcards.atlas]["dlabel"],
     params:
-        exclude_opt="-exclude-outliers {nstdev} {nstdev}".format(
-            nstdev=config["func"]["parcellation"]["n_stdevs_exclude"]
-        )
-        if config["func"]["parcellation"]["do_exclude_outliers"]
-        else "",
+        exclude_opt=(
+            "-exclude-outliers {nstdev} {nstdev}".format(
+                    nstdev=config["func"]["parcellation"]["n_stdevs_exclude"]
+                )
+                if config["func"]["parcellation"]["do_exclude_outliers"]
+            else ""
+        ),
     output:
         cifti_ptseries=bids(
             root=root,
@@ -157,10 +165,12 @@ rule parcellate_bold:
             fwhm="{fwhm}",
             atlas="{atlas}",
             suffix="bold.ptseries.nii",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
     container:
         config["singularity"]["diffparc"]
+    group:
+        "grouped_subject"
     shell:
         "wb_command -cifti-parcellate {input.cifti_dtseries} {input.cifti_dlabel} "
         " COLUMN {output.cifti_ptseries} {params.exclude_opt}"
@@ -182,10 +192,12 @@ rule correlate_parcels:
             fwhm="{fwhm}",
             atlas="{atlas}",
             suffix="bold.pconn.nii",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
     container:
         config["singularity"]["diffparc"]
+    group:
+        "grouped_subject"
     shell:
         "wb_command -cifti-correlation {input.cifti} {output.cifti} {params.fisher_z} "
 
@@ -203,7 +215,7 @@ rule struc_conn_csv_to_pconn_cifti:
             fwhm=config["func"]["fwhm"][0],
             atlas="{atlas}",
             suffix="bold.pconn.nii",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
         conn_csv=bids(
             root=root,
@@ -221,6 +233,8 @@ rule struc_conn_csv_to_pconn_cifti:
             suffix="struc.pconn.nii",
             **config["subj_wildcards"],
         ),
+    group:
+        "grouped_subject"
     script:
         "../scripts/struc_conn_csv_to_pconn_cifti.py"
 
@@ -230,6 +244,10 @@ rule calc_degree:
         pconn="{prefix}_{suffix}.pconn.nii",
     output:
         pscalar="{prefix}_{suffix}degree.pscalar.nii",
+    group:
+        "grouped_subject"
+    container:
+        config["singularity"]["diffparc"]
     shell:
         "wb_command -cifti-reduce {input} SUM {output}"
 
@@ -254,7 +272,7 @@ rule calc_sfc:
             fwhm="{fwhm}",
             atlas="{atlas}",
             suffix="bold.pconn.nii",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
     output:
         pscalar_sfc=bids(
@@ -267,7 +285,9 @@ rule calc_sfc:
             fwhm="{fwhm}",
             atlas="{atlas}",
             suffix="sfc.pscalar.nii",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
+    group:
+        "grouped_subject"
     script:
         "../scripts/calc_sfc.py"

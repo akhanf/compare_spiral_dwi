@@ -18,7 +18,7 @@ rule dwi2mif:
         ),
     threads: 8
     group:
-        "subj1"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -57,7 +57,7 @@ rule dwi2response:
         ),
     threads: 8
     group:
-        "subj1"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -98,7 +98,7 @@ rule dwi2fod:
         ),
     threads: 8
     group:
-        "subj2"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -137,7 +137,7 @@ rule mtnormalise:
         ),
     threads: 8
     group:
-        "subj2"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -155,7 +155,7 @@ rule dwi2tensor:
             **config["subj_wildcards"],
         ),
     group:
-        "subj1"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -174,7 +174,7 @@ rule tensor2metrics:
             **config["subj_wildcards"],
         ),
     group:
-        "subj1"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -198,7 +198,7 @@ rule create_seed:
             **config["subj_wildcards"],
         ),
     group:
-        "subj2"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -225,7 +225,7 @@ rule tckgen:
         ),
     threads: 8
     group:
-        "subj2"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -254,7 +254,7 @@ rule tcksift2:
         ),
     threads: 8
     group:
-        "subj2"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -271,7 +271,7 @@ rule tck2connectome:
             datatype="dwi",
             atlas="{atlas}",
             suffix="dseg.nii.gz",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
     output:
         sl_assignment=bids(
@@ -290,7 +290,7 @@ rule tck2connectome:
         ),
     threads: 8
     group:
-        "subj2"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:

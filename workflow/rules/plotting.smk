@@ -5,6 +5,8 @@ rule plot_pconn_png:
         cifti_pconn="{prefix}.pconn.nii",
     output:
         png="{prefix}.pconn.matrix.png",
+    group:
+        "plotting"
     script:
         "../scripts/plot_pconn_png.py"
 
@@ -22,7 +24,7 @@ rule plot_sfc_markers_png:
             fwhm="{fwhm}",
             atlas="{atlas}",
             suffix="sfc.pscalar.nii",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
         pscalar_markers="resources/atlas/atlas-{atlas}_surf-{surf}_markers.pscalar.nii",
         surfs=lambda wildcards: expand(
@@ -40,8 +42,10 @@ rule plot_sfc_markers_png:
             atlas="{atlas}",
             surf="{surf}",
             suffix="sfc.markerplot.png",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
+    group:
+        "grouped_subject"
     script:
         "../scripts/plot_sfc_markers_png.py"
 
@@ -58,7 +62,7 @@ rule plot_func_network:
             fwhm="{fwhm}",
             atlas="{atlas}",
             suffix="bold.pconn.nii",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
         label_tsv="resources/atlas/atlas-{atlas}_dseg.tsv",
     params:
@@ -75,8 +79,10 @@ rule plot_func_network:
             fwhm="{fwhm}",
             atlas="{atlas}",
             suffix="bold.pconn.network.png",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
+    group:
+        "grouped_subject"
     script:
         "../scripts/plot_network.py"
 
@@ -104,9 +110,10 @@ rule plot_struc_network:
             suffix="struc.pconn.network.png",
             **config["subj_wildcards"],
         ),
+    group:
+        "grouped_subject"
     script:
         "../scripts/plot_network.py"
-
 
 
 rule plot_func_chord:
@@ -121,11 +128,11 @@ rule plot_func_chord:
             fwhm="{fwhm}",
             atlas="{atlas}",
             suffix="bold.pconn.nii",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
         label_tsv="resources/atlas/atlas-{atlas}_dseg.tsv",
     params:
-        opts=config['nichord']['func']
+        opts=config["nichord"]["func"],
     output:
         png=bids(
             root=root,
@@ -137,11 +144,12 @@ rule plot_func_chord:
             fwhm="{fwhm}",
             atlas="{atlas}",
             suffix="bold.pconn.chord.png",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
+    group:
+        "grouped_subject"
     script:
         "../scripts/plot_chord.py"
-
 
 
 rule plot_struc_chord:
@@ -156,7 +164,7 @@ rule plot_struc_chord:
         ),
         label_tsv="resources/atlas/atlas-{atlas}_dseg.tsv",
     params:
-        opts=config['nichord']['struc']
+        opts=config["nichord"]["struc"],
     output:
         png=bids(
             root=root,
@@ -166,7 +174,7 @@ rule plot_struc_chord:
             suffix="struc.pconn.chord.png",
             **config["subj_wildcards"],
         ),
+    group:
+        "grouped_subject"
     script:
         "../scripts/plot_chord.py"
-
-

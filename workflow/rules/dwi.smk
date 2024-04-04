@@ -205,6 +205,14 @@ rule create_seed:
         "mrthreshold {input} -abs {params.threshold} {output}"
 
 
+def get_tckgen_runtime(wildcards,threads):
+    streamlines=config["dwi"]["sl_count"]
+    minimum_minutes=10
+    minutes_per_streamline=0.0001 #based on 1 million streamlines taking 100 minutes 
+    
+    return max(int(minutes_per_streamline * streamlines / threads),minimum_minutes)
+ 
+
 rule tckgen:
     # Tournier, J.-D.; Calamante, F. & Connelly, A. Improved probabilistic streamlines tractography by 2nd order integration over fibre orientation distributions. Proceedings of the International Society for Magnetic Resonance in Medicine, 2010, 1670
     input:
@@ -224,6 +232,8 @@ rule tckgen:
             **config["subj_wildcards"],
         ),
     threads: 8
+    resources:
+        runtime=get_tckgen_runtime
     group:
         "grouped_subject"
     container:
@@ -253,6 +263,8 @@ rule tcksift2:
             **config["subj_wildcards"],
         ),
     threads: 8
+    resources:
+        runtime=get_tckgen_runtime
     group:
         "grouped_subject"
     container:

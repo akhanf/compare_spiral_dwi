@@ -1,5 +1,5 @@
 
-in_root: '/home/ROBARTS/alik/graham' #for cbs server
+in_root: '$HOME/graham' #for cbs server
 #in_root: '/home/akhanf' #for graham
 
 #files in one big zip file - these paths are relative to in_root defined above

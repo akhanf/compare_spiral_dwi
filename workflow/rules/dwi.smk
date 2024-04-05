@@ -208,7 +208,7 @@ rule create_seed:
 def get_tckgen_runtime(wildcards,threads):
     streamlines=config["dwi"]["sl_count"]
     minimum_minutes=10
-    minutes_per_streamline=0.0001 #based on 1 million streamlines taking 100 minutes 
+    minutes_per_streamline=0.0005
     
     return max(int(minutes_per_streamline * streamlines / threads),minimum_minutes)
  

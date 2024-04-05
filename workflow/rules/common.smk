@@ -13,7 +13,7 @@ def get_dwi_targets():
                 ),
                 subject=subjects[dataset],
                 dataset=dataset,
-                plottype=["matrix", "network", "chord"],
+                plottype=["matrix", "chord"],
                 atlas=config["atlases"],
             )
         )
@@ -43,7 +43,7 @@ def get_func_targets():
                 denoise=config["func"]["denoise"].keys(),
                 fwhm=config["func"]["fwhm"],
                 atlas=config["atlases"],
-                plottype=["matrix", "network", "chord"],
+                plottype=["matrix", "chord"],
             )
         )
     return targets

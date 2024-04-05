@@ -53,18 +53,34 @@ datasets:
   - HCP
   - LOBE
 
-subjects: 
+use_test_subjects: True
+
+test_subjects: 
   HCP:
    - 'HCD0277447'
+   - 'HCD0021614'
+   - 'HCD0026119'
+
   LOBE:
    - '007'
+   - '009'
+   - '010'
 
 template_surf: 'resources/tpl-fsLR/tpl-fsLR_den-32k_hemi-{hemi}_{surf}.surf.gii'
 
+#atlases to actually use:
+atlases:
+  - schaefer
+
+
 atlas:
-  schaefer: resources/schaefer_2018/Schaefer2018_300Parcels_7Networks_order.dlabel.nii
-  mmp: resources/mmp/Q1-Q6_RelatedParcellation210.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.dlabel.nii
-  brainnetome: resources/brainnetome/fsaverage.BN_Atlas.32k_fs_LR_updated.dlabel.nii
+  schaefer: 
+    dlabel: resources/schaefer_2018/Schaefer2018_300Parcels_7Networks_order.dlabel.nii
+    network_pattern: '[^_]+_[^_]+_([^_]+)' #regex to find network name within label
+  mmp: 
+    dlabel: resources/mmp/Q1-Q6_RelatedParcellation210.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.dlabel.nii
+  brainnetome: 
+    dlabel: resources/brainnetome/fsaverage.BN_Atlas.32k_fs_LR_updated.dlabel.nii
 dwi:
   shells: 
     - '0'
@@ -76,7 +92,7 @@ dwi:
     - '8'
     - '8'
 
-  sl_count: 10000
+  sl_count: 1000000
 
  
 func:
@@ -114,7 +130,25 @@ func:
         - steady_state_outlier
 
 
+nichord:
+  struc:
+    edge_widthscale: 0.001
+  func:
+    edge_widthscale: 0.001
 
+netplotbrain:
+  struc:
+    view: 'LSc'
+    edge_thresholddirection: above
+    edge_threshold: 100
+    edge_widthscale: 0.001
+
+
+  func:
+    view: 'LSc'
+    edge_thresholddirection: above
+    edge_threshold: 0.9
+    edge_widthscale: 0.3
 
 
 singularity:

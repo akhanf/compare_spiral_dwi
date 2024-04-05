@@ -18,7 +18,7 @@ rule dwi2mif:
         ),
     threads: 8
     group:
-        "subj1"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -57,7 +57,7 @@ rule dwi2response:
         ),
     threads: 8
     group:
-        "subj1"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -98,7 +98,7 @@ rule dwi2fod:
         ),
     threads: 8
     group:
-        "subj2"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -137,7 +137,7 @@ rule mtnormalise:
         ),
     threads: 8
     group:
-        "subj2"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -155,7 +155,7 @@ rule dwi2tensor:
             **config["subj_wildcards"],
         ),
     group:
-        "subj1"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -174,7 +174,7 @@ rule tensor2metrics:
             **config["subj_wildcards"],
         ),
     group:
-        "subj1"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -198,12 +198,20 @@ rule create_seed:
             **config["subj_wildcards"],
         ),
     group:
-        "subj2"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
         "mrthreshold {input} -abs {params.threshold} {output}"
 
+
+def get_tckgen_runtime(wildcards,threads):
+    streamlines=config["dwi"]["sl_count"]
+    minimum_minutes=10
+    minutes_per_streamline=0.0005
+    
+    return max(int(minutes_per_streamline * streamlines / threads),minimum_minutes)
+ 
 
 rule tckgen:
     # Tournier, J.-D.; Calamante, F. & Connelly, A. Improved probabilistic streamlines tractography by 2nd order integration over fibre orientation distributions. Proceedings of the International Society for Magnetic Resonance in Medicine, 2010, 1670
@@ -224,8 +232,10 @@ rule tckgen:
             **config["subj_wildcards"],
         ),
     threads: 8
+    resources:
+        runtime=get_tckgen_runtime
     group:
-        "subj2"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -253,8 +263,10 @@ rule tcksift2:
             **config["subj_wildcards"],
         ),
     threads: 8
+    resources:
+        runtime=get_tckgen_runtime
     group:
-        "subj2"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
@@ -271,7 +283,7 @@ rule tck2connectome:
             datatype="dwi",
             atlas="{atlas}",
             suffix="dseg.nii.gz",
-            **config["subj_wildcards"]
+            **config["subj_wildcards"],
         ),
     output:
         sl_assignment=bids(
@@ -290,7 +302,7 @@ rule tck2connectome:
         ),
     threads: 8
     group:
-        "subj2"
+        "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:

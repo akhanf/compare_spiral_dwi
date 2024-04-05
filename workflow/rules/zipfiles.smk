@@ -1,12 +1,14 @@
 wildcard_constraints:
     subject="[a-zA-Z0-9]+",
-    app="|".join(config['in_agg_zip'].keys()),
-    dataset="[a-zA-Z0-9]+"
+    app="|".join(config["in_agg_zip"].keys()),
+    dataset="[a-zA-Z0-9]+",
 
 
 def get_zip_file(wildcards):
     if wildcards.app in config["in_agg_zip"]:
-        return os.path.join(in_root,config["in_agg_zip"][wildcards.app][wildcards.dataset])
+        return os.path.join(
+            in_root, config["in_agg_zip"][wildcards.app][wildcards.dataset]
+        )
     else:
         print(
             f"ERROR: cannot find zip file for {wildcards.app}/{wildcards.dataset} in config['in_agg_zip']"
@@ -21,6 +23,8 @@ rule get_from_zip:
         zip=get_zip_file,
     output:
         "{app}/{dataset}/{file}",  # you could add temp() around this to extract on the fly and not store it
+    group:
+        "grouped_subject"
     shell:
         "unzip -d {wildcards.app} {input.zip} {wildcards.dataset}/{wildcards.file}"
 

@@ -10,19 +10,23 @@ set_bids_spec("v0_0_0")
 
 configfile: "config/config.yml"
 
+if config["use_test_subjects"]:
+    subjects = config["test_subjects"]
+else:
+    subjects = {
+        dataset: list(
+            pd.read_csv(
+                f"resources/dataset-{dataset}_subjects.tsv",
+                sep="\t",
+                dtype={"participant_label": str},
+            ).participant_label
+        )
+        for dataset in config['datasets']
+    }
 
-subjects = {
-    dataset: list(
-        pd.read_csv(
-            f"resources/dataset-{dataset}_subjects.tsv",
-            sep="\t",
-            dtype={"participant_label": str},
-        ).participant_label
-    )
-    for dataset in config["datasets"]
-}
 
-root = os.path.join(os.path.expandvars(config["root"]),"{dataset}")
+
+root = os.path.join(os.path.expandvars(config["root"]), "{dataset}")
 in_root = os.path.expandvars(config["in_root"])
 
 
@@ -33,6 +37,7 @@ include: "rules/dwi.smk"
 include: "rules/func.smk"
 include: "rules/hippunfold.smk"
 include: "rules/tabular.smk"
+include: "rules/plotting.smk"
 
 
 rule all:
@@ -40,6 +45,7 @@ rule all:
         get_dwi_targets(),
         get_func_targets(),
         get_sfc_targets(),
+
 
 rule all_dwi:
     input:

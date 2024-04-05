@@ -8,12 +8,13 @@ def get_dwi_targets():
                     datatype="dwi",
                     den="32k",
                     atlas="{atlas}",
-                    suffix="struc.pconn.png",
+                    suffix="struc.pconn.{plottype}.png",
                     **config["subj_wildcards"],
                 ),
-                subject=config["subjects"][dataset],
+                subject=subjects[dataset],
                 dataset=dataset,
-                atlas=config["atlas"].keys(),
+                plottype=["matrix", "chord"],
+                atlas=config["atlases"],
             )
         )
     return targets
@@ -33,19 +34,19 @@ def get_func_targets():
                     denoise="{denoise}",
                     fwhm="{fwhm}",
                     atlas="{atlas}",
-                    suffix="bold.pconn.png",
+                    suffix="bold.pconn.{plottype}.png",
                     **config["subj_wildcards"],
                 ),
-                subject=config["subjects"][dataset],
+                subject=subjects[dataset],
                 dataset=dataset,
                 task=config["func"]["task"],
                 denoise=config["func"]["denoise"].keys(),
                 fwhm=config["func"]["fwhm"],
-                atlas=config["atlas"].keys(),
+                atlas=config["atlases"],
+                plottype=["matrix", "chord"],
             )
         )
     return targets
-
 
 
 def get_sfc_targets():
@@ -65,13 +66,14 @@ def get_sfc_targets():
                     suffix="sfc.pscalar.nii",
                     **config["subj_wildcards"],
                 ),
-                subject=config["subjects"][dataset],
+                subject=subjects[dataset],
                 dataset=dataset,
                 task=config["func"]["task"],
                 denoise=config["func"]["denoise"].keys(),
                 fwhm=config["func"]["fwhm"],
-                atlas=config["atlas"].keys(),
+                atlas=config["atlases"],
             )
         )
 
     return targets
+

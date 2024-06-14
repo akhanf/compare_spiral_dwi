@@ -16,7 +16,7 @@ rule get_surf_label_from_cifti_atlas:
 
 rule map_atlas_to_dwi:
     input:
-        vol_ref=config["input_path"]["dwi_mask"],
+        vol_ref=lambda wildcards: config["input_path"]["dwi_mask"][wildcards.dataset],
         label="resources/atlas/atlas-{atlas}_hemi-{hemi}_parc.label.gii",
         mid_surf=lambda wildcards: config["input_path"]["surf_gii_t1"].format(
             surf="midthickness", **wildcards

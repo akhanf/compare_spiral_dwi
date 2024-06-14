@@ -19,8 +19,14 @@ in_demog_tabular:
 
 #to find paths below, use: unzip -l cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_HCP_2023_09_23.zip | less
 input_path: 
-  dwi_nii: 'snakebatch_dwi/{dataset}/derivatives/snakedwi/snakedwi/sub-{subject}/dwi/sub-{subject}_space-T1w_res-orig_desc-eddy_dwi.nii.gz'
-  dwi_mask: 'snakebatch_dwi/{dataset}/derivatives/snakedwi/snakedwi/sub-{subject}/dwi/sub-{subject}_space-T1w_res-orig_desc-brain_mask.nii.gz'
+  dwi_nii: 
+    spiral: '/local/scratch/compare_dwi/P156_test_corey_diffusion/cb_sp2d_diff_cx_dndgabs_LTE.nii.gz'
+    epi: '/local/scratch/compare_dwi/out_snakedwi/snakedwi/sub-P156/dwi/sub-P156_desc-eddy_dwi.nii.gz'
+    
+  dwi_mask: 
+    spiral: '/local/scratch/compare_dwi/P156_test_corey_diffusion/mask_threshold10.nii.gz'
+    epi: '/local/scratch/compare_dwi/out_snakedwi/snakedwi/sub-P156/dwi/sub-P156_desc-brain_mask.nii.gz'
+
   bold_nii:     
     HCP: 'snakebatch/{dataset}/derivatives/fmriprep/sub-{subject}/func/sub-{subject}_task-rest_acq-AP_space-T1w_desc-preproc_bold.nii.gz'
     LOBE: 'snakebatch/{dataset}/derivatives/fmriprep/sub-{subject}/func/sub-{subject}_task-rest_acq-AP_run-1_space-T1w_desc-preproc_bold.nii.gz'
@@ -36,8 +42,8 @@ input_path:
   t1_mask:
     HCP: 'snakebatch/{dataset}/derivatives/fmriprep/sub-{subject}/anat/sub-{subject}_desc-brain_mask.nii.gz'
     LOBE: 'snakebatch/{dataset}/derivatives/fmriprep/sub-{subject}/anat/sub-{subject}_acq-MPRvNavAvgEcho12_run-1_desc-brain_mask.nii.gz'
-  surf_gii_t1: 'snakebatch/{dataset}/derivatives/snakeanat/sourcedata/ciftify/sub-{subject}/T1w/fsaverage_LR32k/sub-{subject}.{hemi}.{surf}.32k_fs_LR.surf.gii'
-  surf_gii_mni: 'snakebatch/{dataset}/derivatives/snakeanat/sourcedata/ciftify/sub-{subject}/MNINonLinear/fsaverage_LR32k/sub-{subject}.{hemi}.{surf}.32k_fs_LR.surf.gii'
+  surf_gii_t1: '/home/ROBARTS/alik/graham/scratch/3_processing/snakebatch_dwi_compare_snsx/SNSX/derivatives/snakeanat/sourcedata/ciftify/sub-{subject}/T1w/fsaverage_LR32k/sub-{subject}.{hemi}.{surf}.32k_fs_LR.surf.gii'
+  surf_gii_mni: '/home/ROBARTS/alik/graham/scratch/3_processing/snakebatch_dwi_compare_snsx/SNSX/derivatives/snakeanat/sourcedata/ciftify/sub-{subject}/MNINonLinear/fsaverage_LR32k/sub-{subject}.{hemi}.{surf}.32k_fs_LR.surf.gii'
   hippunfold_vol_tsv: 'snakebatch/{dataset}/derivatives/hippunfold/hippunfold/sub-{subject}/anat/sub-{subject}_space-cropT1w_desc-subfields_atlas-bigbrain_volumes.tsv'
 
 
@@ -50,21 +56,16 @@ subj_wildcards:
 
 
 datasets:
-  - HCP
-  - LOBE
+  - spiral
+  - epi
 
 use_test_subjects: True
 
 test_subjects: 
-  HCP:
-   - 'HCD0277447'
-   - 'HCD0021614'
-   - 'HCD0026119'
-
-  LOBE:
-   - '007'
-   - '009'
-   - '010'
+  spiral:
+   - P156
+  epi:
+   - P156
 
 template_surf: 'resources/tpl-fsLR/tpl-fsLR_den-32k_hemi-{hemi}_{surf}.surf.gii'
 
@@ -84,8 +85,8 @@ atlas:
 dwi:
   shells: 
     - '0'
-    - '1500'
-    - '3000'
+    - '1000'
+    - '2000'
 
   lmax: 
     - '0'

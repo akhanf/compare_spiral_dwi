@@ -2,12 +2,12 @@
 
 rule dwi2mif:
     input:
-        dwi=config["input_path"]["dwi_nii"],
+        dwi=lambda wildcards: config["input_path"]["dwi_nii"][wildcards.dataset],
         bval=lambda wildcards: re.sub(
-            ".nii.gz", ".bval", config["input_path"]["dwi_nii"]
+            ".nii.gz", ".bval", config["input_path"]["dwi_nii"][wildcards.dataset]
         ),
         bvec=lambda wildcards: re.sub(
-            ".nii.gz", ".bvec", config["input_path"]["dwi_nii"]
+            ".nii.gz", ".bvec", config["input_path"]["dwi_nii"][wildcards.dataset]
         ),
     output:
         dwi=bids(
@@ -29,7 +29,7 @@ rule dwi2response:
     # Dhollander, T.; Mito, R.; Raffelt, D. & Connelly, A. Improved white matter response function estimation for 3-tissue constrained spherical deconvolution. Proc Intl Soc Mag Reson Med, 2019, 555
     input:
         dwi=rules.dwi2mif.output.dwi,
-        mask=config["input_path"]["dwi_mask"],
+        mask=lambda wildcards: config["input_path"]["dwi_mask"][wildcards.dataset],
     params:
         shells=",".join(config["dwi"]["shells"]),
         lmax=",".join(config["dwi"]["lmax"]),
@@ -68,7 +68,7 @@ rule dwi2fod:
     # Jeurissen, B; Tournier, J-D; Dhollander, T; Connelly, A & Sijbers, J. Multi-tissue constrained spherical deconvolution for improved analysis of multi-shell diffusion MRI data. NeuroImage, 2014, 103, 411-426
     input:
         dwi=rules.dwi2mif.output.dwi,
-        mask=config["input_path"]["dwi_mask"],
+        mask=lambda wildcards: config["input_path"]["dwi_mask"][wildcards.dataset],
         wm_rf=rules.dwi2response.output.wm_rf,
         gm_rf=rules.dwi2response.output.gm_rf,
         csf_rf=rules.dwi2response.output.csf_rf,
@@ -112,7 +112,7 @@ rule mtnormalise:
         wm_fod=rules.dwi2fod.output.wm_fod,
         gm_fod=rules.dwi2fod.output.gm_fod,
         csf_fod=rules.dwi2fod.output.csf_fod,
-        mask=config["input_path"]["dwi_mask"],
+        mask=lambda wildcards: config["input_path"]["dwi_mask"][wildcards.dataset],
     output:
         wm_fod=bids(
             root=root,
@@ -165,7 +165,7 @@ rule dwi2tensor:
 rule tensor2metrics:
     input:
         tensor=rules.dwi2tensor.output.tensor,
-        mask=config["input_path"]["dwi_mask"],
+        mask=lambda wildcards: config["input_path"]["dwi_mask"][wildcards.dataset],
     output:
         fa=bids(
             root=root,
@@ -218,7 +218,7 @@ rule tckgen:
     input:
         wm_fod=rules.mtnormalise.output.wm_fod,
         dwi=rules.dwi2mif.output.dwi,
-        mask=config["input_path"]["dwi_mask"],
+        mask=lambda wildcards: config["input_path"]["dwi_mask"][wildcards.dataset],
         seed=rules.create_seed.output.seed,
     params:
         streamlines=config["dwi"]["sl_count"],

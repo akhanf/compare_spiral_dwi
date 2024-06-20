@@ -172,6 +172,44 @@ rule reg_b0_to_t1:
         "    -rm {input.avgb0} {output.warped_avgb0} -r {output.xfm_ras}"
    
  
+rule warp_t1_to_dwi:
+    """for overlay purposes only"""
+    input:
+        t1=lambda wildcards: config["input_path"]["t1_nii"][wildcards.dataset],
+        xfm_ras=bids(
+            root=root,
+            datatype="warps",
+            from_='b0',
+            to='T1w',
+            type_='ras',
+            suffix="affine.txt",
+            **config["subj_wildcards"],
+        ),        
+        avgb0=bids(
+            root=root,
+            datatype="dwi",
+            suffix="avgb0.nii.gz",
+            **config["subj_wildcards"],
+        ),        
+    params:
+        general_opts="-d 3",
+ 
+    output:
+        warped_t1=bids(
+            root=root,
+            datatype="dwi",
+            space='dwi',
+            suffix="T1w.nii.gz",
+            **config["subj_wildcards"],
+        ),
+    shell:
+        "greedy -threads {threads} {params.general_opts} -rf {input.avgb0} "
+        "    -rm {input.t1} {output.warped_t1} -r {input.xfm_ras},-1"
+
+
+
+
+
 
 
 rule dwi2response:
@@ -481,4 +519,33 @@ rule tck2connectome:
         config["singularity"]["mrtrix"]
     shell:
         "tck2connectome -nthreads {threads} -tck_weights_in {input.tckweights} -out_assignments {output.sl_assignment} -zero_diagonal -symmetric {input.tck} {input.parcellation} {output.conn}"
+
+
+rule connectome2tck:
+    # Smith, R. E.; Tournier, J.-D.; Calamante, F. & Connelly, A. The effects of SIFT on the reproducibility and biological accuracy of the structural connectome. NeuroImage, 2015, 104, 253-265
+    input:
+        tck=rules.tckgen.output.tck,
+        sl_assignment=bids(
+            root=root,
+            datatype="dwi",
+            atlas="{atlas}",
+            suffix="streamassign.txt",
+            **config["subj_wildcards"],
+        ),
+    output:
+        tck_dir=directory(bids(
+            root=root,
+            datatype="dwi",
+            atlas="{atlas}",
+            suffix="struc.bundles",
+            **config["subj_wildcards"],
+        )),
+    threads: 8
+    group:
+        "grouped_subject"
+    container:
+        config["singularity"]["mrtrix"]
+    shell:
+        "mkdir -p {output} && connectome2tck -nthreads {threads} {input.tck} {input.sl_assignment} {output.tck_dir}/bundle_"
+
 

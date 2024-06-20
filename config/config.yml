@@ -2,6 +2,16 @@
 in_root: '$HOME/graham' #for cbs server
 #in_root: '/home/akhanf' #for graham
 
+subsampling:
+  epi:
+    - shell0subsampled6
+    - shell1000subsampled26
+    - shell2000subsampled26
+  spiral:
+    - shell0
+    - shell1000
+    - shell2000
+
 #files in one big zip file - these paths are relative to in_root defined above
 in_agg_zip: 
   snakebatch_dwi:
@@ -24,9 +34,13 @@ input_path:
     epi: '/local/scratch/compare_dwi/out_snakedwi/snakedwi/sub-P156/dwi/sub-P156_desc-eddy_dwi.nii.gz'
     
   dwi_mask: 
-    spiral: '/local/scratch/compare_dwi/P156_test_corey_diffusion/mask_threshold10.nii.gz'
+    spiral: '/local/scratch/compare_dwi/P156_test_corey_diffusion/mask_epi_resampled.nii.gz'
     epi: '/local/scratch/compare_dwi/out_snakedwi/snakedwi/sub-P156/dwi/sub-P156_desc-brain_mask.nii.gz'
 
+  t1_nii:
+    spiral: '/local/scratch/compare_dwi/out_snakedwi/snakedwi/sub-P156/anat/sub-P156_desc-preproc_T1w.nii.gz'
+    epi: '/local/scratch/compare_dwi/out_snakedwi/snakedwi/sub-P156/anat/sub-P156_desc-preproc_T1w.nii.gz' #same as spiral
+    
   bold_nii:     
     HCP: 'snakebatch/{dataset}/derivatives/fmriprep/sub-{subject}/func/sub-{subject}_task-rest_acq-AP_space-T1w_desc-preproc_bold.nii.gz'
     LOBE: 'snakebatch/{dataset}/derivatives/fmriprep/sub-{subject}/func/sub-{subject}_task-rest_acq-AP_run-1_space-T1w_desc-preproc_bold.nii.gz'
@@ -83,6 +97,7 @@ atlas:
   brainnetome: 
     dlabel: resources/brainnetome/fsaverage.BN_Atlas.32k_fs_LR_updated.dlabel.nii
 dwi:
+
   shells: 
     - '0'
     - '1000'
@@ -90,8 +105,8 @@ dwi:
 
   lmax: 
     - '0'
-    - '8'
-    - '8'
+    - '4'
+    - '4'
 
   sl_count: 1000000
 

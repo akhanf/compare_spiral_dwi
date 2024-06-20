@@ -1,4 +1,25 @@
 
+rule warp_surf_to_dwi:
+    input:
+        surf=config["input_path"]["surf_gii_t1"],
+        xfm_ras=bids(
+            root=root,
+            datatype="warps",
+            from_='b0',
+            to='T1w',
+            type_='ras',
+            suffix="affine.txt",
+            **config["subj_wildcards"],
+        ),        
+    output:
+        surf=bids(root=root,datatype="dwi",hemi="{hemi}",space="dwi",suffix="{surf}.surf.gii",**config['subj_wildcards'])
+    container:
+        config["singularity"]["diffparc"]
+    group:
+        "grouped_subject"
+    shell:
+        "wb_command -surface-apply-affine {input.surf} {input.xfm_ras} {output.surf}"
+
 
 rule get_surf_label_from_cifti_atlas:
     input:
@@ -18,15 +39,9 @@ rule map_atlas_to_dwi:
     input:
         vol_ref=lambda wildcards: config["input_path"]["dwi_mask"][wildcards.dataset],
         label="resources/atlas/atlas-{atlas}_hemi-{hemi}_parc.label.gii",
-        mid_surf=lambda wildcards: config["input_path"]["surf_gii_t1"].format(
-            surf="midthickness", **wildcards
-        ),
-        white_surf=lambda wildcards: config["input_path"]["surf_gii_t1"].format(
-            surf="white", **wildcards
-        ),
-        pial_surf=lambda wildcards: config["input_path"]["surf_gii_t1"].format(
-            surf="pial", **wildcards
-        ),
+        mid_surf=bids(root=root,datatype="dwi",hemi="{hemi}",space="dwi",suffix="midthickness.surf.gii",**config['subj_wildcards']),
+        white_surf=bids(root=root,datatype="dwi",hemi="{hemi}",space="dwi",suffix="white.surf.gii",**config['subj_wildcards']),
+        pial_surf=bids(root=root,datatype="dwi",hemi="{hemi}",space="dwi",suffix="pial.surf.gii",**config['subj_wildcards']),
     output:
         vol=bids(
             root=root,

@@ -39,12 +39,18 @@ include: "rules/hippunfold.smk"
 include: "rules/tabular.smk"
 include: "rules/plotting.smk"
 
+rule all_dwi_conn:
+    input:
+        get_dwi_conn_csv_targets(),
+
+
 
 rule all:
     input:
         get_dwi_targets(),
         get_func_targets(),
         get_sfc_targets(),
+
 
 
 rule all_dwi:

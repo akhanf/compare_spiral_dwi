@@ -1,4 +1,6 @@
-
+wildcard_constraints:
+    shell='[0-9]+',
+    ndirs='[0-9]+'
 
 rule dwi2mif:
     input:
@@ -13,6 +15,7 @@ rule dwi2mif:
         dwi=bids(
             root=root,
             datatype="dwi",
+            desc='init',
             suffix="dwi.mif",
             **config["subj_wildcards"],
         ),
@@ -24,11 +27,163 @@ rule dwi2mif:
     shell:
         "mrconvert {input.dwi} {output.dwi} -fslgrad {input.bvec} {input.bval} -nthreads {threads}"
 
+rule split_into_shells:
+    input:
+        dwi=bids(
+            root=root,
+            datatype="dwi",
+            desc='init',
+            suffix="dwi.mif",
+            **config["subj_wildcards"],
+        ),
+    output:
+        dwi=bids(
+            root=root,
+            datatype="dwi",
+            desc='shell{shell}',
+            suffix="dwi.mif",
+            **config["subj_wildcards"],
+        ),
+    params:
+        opts=lambda wildcards:  '-shells 0' if wildcards.shell=='0' else f'-no_bzero -shells {wildcards.shell}'
+    threads: 8
+    group:
+        "grouped_subject"
+    container:
+        config["singularity"]["mrtrix"]
+    shell:
+        "dwiextract {params.opts} {input.dwi} {output.dwi}"
+
+rule subsample_shell:
+    input:
+        dwi=bids(
+            root=root,
+            datatype="dwi",
+            desc='shell{shell}',
+            suffix="dwi.mif",
+            **config["subj_wildcards"],
+        ),
+    output:
+        dwi=bids(
+            root=root,
+            datatype="dwi",
+            desc='shell{shell}subsampled{ndirs}',
+            suffix="dwi.mif",
+            **config["subj_wildcards"],
+        ),
+    params:
+        opts=lambda wildcards: '-coord 3 0:1:{n}'.format(n=int(wildcards.ndirs)-1)
+    threads: 8
+    group:
+        "grouped_subject"
+    container:
+        config["singularity"]["mrtrix"]
+    shell:
+        "mrconvert {input.dwi} {output.dwi}  {params.opts}"
+
+   
+rule combine_shells:
+    input:
+        #b0, b1000 subsampled, b2000 subsampled
+        dwi_shells=lambda wildcards: expand(bids(root=root,
+            datatype="dwi",
+            desc='{desc}',
+            suffix="dwi.mif",
+            **config["subj_wildcards"],
+            ),desc=config['subsampling'][wildcards.dataset],allow_missing=True)
+   
+    output:
+        dwi=bids(
+            root=root,
+            datatype="dwi",
+            suffix="dwi.mif",
+            **config["subj_wildcards"],
+        ),
+    threads: 8
+    group:
+        "grouped_subject"
+    container:
+        config["singularity"]["mrtrix"]
+    shell:
+        "mrcat {input} {output}"
+
+         
+
+rule get_avgb0:
+    input:
+        dwi=bids(
+            root=root,
+            datatype="dwi",
+            suffix="dwi.mif",
+            **config["subj_wildcards"],
+        ),        
+    output:
+        dwi=bids(
+            root=root,
+            datatype="dwi",
+            suffix="avgb0.nii.gz",
+            **config["subj_wildcards"],
+        ),        
+    threads: 8
+    group:
+        "grouped_subject"
+    container:
+        config["singularity"]["mrtrix"]
+    shell:
+        'dwiextract {input} - -bzero | mrmath - mean {output} -axis 3'
+
+
+              
+rule reg_b0_to_t1:
+    input:
+        avgb0=bids(
+            root=root,
+            datatype="dwi",
+            suffix="avgb0.nii.gz",
+            **config["subj_wildcards"],
+        ),        
+        t1=lambda wildcards: config["input_path"]["t1_nii"][wildcards.dataset],
+    params:
+        general_opts="-d 3",
+        rigid_opts="-m NMI -a -dof 6 -ia-identity -n 50x50"
+    
+    output:
+        xfm_ras=bids(
+            root=root,
+            datatype="warps",
+            from_='b0',
+            to='T1w',
+            type_='ras',
+            suffix="affine.txt",
+            **config["subj_wildcards"],
+        ),        
+        warped_avgb0=bids(
+            root=root,
+            datatype="dwi",
+            space='T1w',
+            suffix="avgb0.nii.gz",
+            **config["subj_wildcards"],
+        ),        
+    threads: 8
+    shell:
+        "greedy -threads {threads} {params.general_opts} {params.rigid_opts}"
+        "    -i {input.t1} {input.avgb0} -o {output.xfm_ras} && "
+        "greedy -threads {threads} {params.general_opts} -rf {input.t1} "
+        "    -rm {input.avgb0} {output.warped_avgb0} -r {output.xfm_ras}"
+   
+ 
+
 
 rule dwi2response:
     # Dhollander, T.; Mito, R.; Raffelt, D. & Connelly, A. Improved white matter response function estimation for 3-tissue constrained spherical deconvolution. Proc Intl Soc Mag Reson Med, 2019, 555
     input:
-        dwi=rules.dwi2mif.output.dwi,
+        dwi=bids(
+            root=root,
+            datatype="dwi",
+            suffix="dwi.mif",
+            **config["subj_wildcards"],
+        ),
+
         mask=lambda wildcards: config["input_path"]["dwi_mask"][wildcards.dataset],
     params:
         shells=",".join(config["dwi"]["shells"]),
@@ -67,7 +222,13 @@ rule dwi2response:
 rule dwi2fod:
     # Jeurissen, B; Tournier, J-D; Dhollander, T; Connelly, A & Sijbers, J. Multi-tissue constrained spherical deconvolution for improved analysis of multi-shell diffusion MRI data. NeuroImage, 2014, 103, 411-426
     input:
-        dwi=rules.dwi2mif.output.dwi,
+        dwi=bids(
+            root=root,
+            datatype="dwi",
+            suffix="dwi.mif",
+            **config["subj_wildcards"],
+        ),
+
         mask=lambda wildcards: config["input_path"]["dwi_mask"][wildcards.dataset],
         wm_rf=rules.dwi2response.output.wm_rf,
         gm_rf=rules.dwi2response.output.gm_rf,
@@ -146,7 +307,13 @@ rule mtnormalise:
 
 rule dwi2tensor:
     input:
-        rules.dwi2mif.output.dwi,
+        dwi=bids(
+            root=root,
+            datatype="dwi",
+            suffix="dwi.mif",
+            **config["subj_wildcards"],
+        ),
+
     output:
         tensor=bids(
             root=root,
@@ -217,7 +384,14 @@ rule tckgen:
     # Tournier, J.-D.; Calamante, F. & Connelly, A. Improved probabilistic streamlines tractography by 2nd order integration over fibre orientation distributions. Proceedings of the International Society for Magnetic Resonance in Medicine, 2010, 1670
     input:
         wm_fod=rules.mtnormalise.output.wm_fod,
-        dwi=rules.dwi2mif.output.dwi,
+        dwi=bids(
+            root=root,
+            datatype="dwi",
+            suffix="dwi.mif",
+            **config["subj_wildcards"],
+        ),
+
+
         mask=lambda wildcards: config["input_path"]["dwi_mask"][wildcards.dataset],
         seed=rules.create_seed.output.seed,
     params:
@@ -307,3 +481,4 @@ rule tck2connectome:
         config["singularity"]["mrtrix"]
     shell:
         "tck2connectome -nthreads {threads} -tck_weights_in {input.tckweights} -out_assignments {output.sl_assignment} -zero_diagonal -symmetric {input.tck} {input.parcellation} {output.conn}"
+

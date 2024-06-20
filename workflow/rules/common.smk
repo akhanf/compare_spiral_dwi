@@ -1,3 +1,25 @@
+def get_dwi_conn_csv_targets():
+    targets = []
+    for dataset in config["datasets"]:
+        targets.extend(
+            expand(
+                bids(
+                    root=root,
+                    datatype="dwi",
+                    atlas="{atlas}",
+                    suffix="struc.conn.csv",
+                    **config["subj_wildcards"],
+                ),
+                subject=subjects[dataset],
+                dataset=dataset,
+                atlas=config["atlases"],
+            )
+        )
+    return targets
+
+
+
+
 def get_dwi_targets():
     targets = []
     for dataset in config["datasets"]:

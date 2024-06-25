@@ -142,7 +142,7 @@ rule reg_b0_to_t1:
             suffix="avgb0.nii.gz",
             **config["subj_wildcards"],
         ),        
-        t1=lambda wildcards: config["input_path"]["t1_nii"][wildcards.dataset],
+        t1=lambda wildcards: config["input_path"]["t1_nii"],
     params:
         general_opts="-d 3",
         rigid_opts="-m NMI -a -dof 6 -ia-identity -n 50x50"
@@ -175,7 +175,7 @@ rule reg_b0_to_t1:
 rule warp_t1_to_dwi:
     """for overlay purposes only"""
     input:
-        t1=lambda wildcards: config["input_path"]["t1_nii"][wildcards.dataset],
+        t1=lambda wildcards: config["input_path"]["t1_nii"],
         xfm_ras=bids(
             root=root,
             datatype="warps",

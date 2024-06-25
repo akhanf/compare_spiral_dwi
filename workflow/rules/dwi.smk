@@ -521,6 +521,29 @@ rule tck2connectome:
         "tck2connectome -nthreads {threads} -tck_weights_in {input.tckweights} -out_assignments {output.sl_assignment} -zero_diagonal -symmetric {input.tck} {input.parcellation} {output.conn}"
 
 
+rule vis_struct_connectome:
+    """this rule doesn't depend on the cifti's from the func pipeline"""
+    input:
+        csv=bids(
+            root=root,
+            datatype="dwi",
+            atlas="{atlas}",
+            suffix="struc.conn.csv",
+            **config["subj_wildcards"],
+        ),
+    params:
+        title='Conn {dataset}'
+    output:
+        png=bids(
+            root=root,
+            datatype="dwi",
+            atlas="{atlas}",
+            suffix="struc.conn.matrix.png",
+            **config["subj_wildcards"],
+        ),
+    script:
+        '../scripts/vis_struct_connectome.py'
+
 rule connectome2tck:
     # Smith, R. E.; Tournier, J.-D.; Calamante, F. & Connelly, A. The effects of SIFT on the reproducibility and biological accuracy of the structural connectome. NeuroImage, 2015, 104, 253-265
     input:
@@ -548,4 +571,8 @@ rule connectome2tck:
     shell:
         "mkdir -p {output} && connectome2tck -nthreads {threads} {input.tck} {input.sl_assignment} {output.tck_dir}/bundle_"
 
-
+rule mif2nii:
+    input: '{prefix}.mif'
+    output: '{prefix}.nii.gz'
+    shell:
+        'mrconvert {input} {output}'

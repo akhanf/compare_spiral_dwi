@@ -7,7 +7,7 @@ def get_dwi_conn_csv_targets():
                     root=root,
                     datatype="dwi",
                     atlas="{atlas}",
-                    suffix="struc.conn.csv",
+                    suffix="struc.conn.matrix.png",
                     **config["subj_wildcards"],
                 ),
                 subject=subjects,
@@ -15,6 +15,33 @@ def get_dwi_conn_csv_targets():
                 atlas=config["atlases"],
             )
         )
+        targets.extend(
+            expand(
+                bids(
+                    root=root,
+                    datatype="dwi",
+                    space='dwi',
+                    suffix="T1w.nii.gz",
+                    **config["subj_wildcards"],
+                ),
+                subject=subjects,
+                dataset=dataset,
+            )
+        )
+        targets.extend(
+            expand(
+                bids(
+                    root=root,
+                    datatype="dwi",
+                    suffix="fa.nii.gz",
+                    **config["subj_wildcards"],
+                ),
+                subject=subjects,
+                dataset=dataset,
+            )
+        )
+
+
     return targets
 
 

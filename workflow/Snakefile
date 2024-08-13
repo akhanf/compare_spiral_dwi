@@ -7,9 +7,21 @@ from snakebids import set_bids_spec
 
 set_bids_spec("v0_0_0")
 
-
 configfile: "config/config.yml"
 
+#import snakebatch workflow
+module snakebatch:
+    snakefile:
+        github("akhanf/snakebatch", path="workflow/Snakefile", tag="4b0d1ac")
+    config: config["snakebatch"]
+
+
+use rule * from snakebatch as snakebatch_*
+
+wildcard_constraints:
+    subject='[0-9a-zA-Z]+'
+
+#rest of the workflow
 if config["use_test_subjects"]:
     subjects = config["test_subjects"]
 else:
@@ -31,7 +43,6 @@ in_root = os.path.expandvars(config["in_root"])
 
 
 include: "rules/common.smk"
-include: "rules/zipfiles.smk"
 include: "rules/atlas.smk"
 include: "rules/dwi.smk"
 include: "rules/func.smk"
@@ -42,14 +53,9 @@ include: "rules/plotting.smk"
 rule all_dwi_conn:
     input:
         get_dwi_conn_csv_targets(),
+#    default_target: True
 
 
-
-rule all:
-    input:
-        get_dwi_targets(),
-        get_func_targets(),
-        get_sfc_targets(),
 
 
 
@@ -58,25 +64,10 @@ rule all_dwi:
         get_dwi_targets(),
 
 
-rule all_func:
-    input:
-        get_func_targets(),
-
-
-rule all_sfc:
-    input:
-        get_sfc_targets(),
-
 
 rule all_lists:
     input:
         expand("resources/dataset-{dataset}_subjects.tsv", dataset=config["datasets"]),
 
 
-rule create_subject_list:
-    input:
-        zipfile=config["in_agg_zip"]["snakebatch"],
-    output:
-        "resources/dataset-{dataset}_subjects.tsv",
-    shell:
-        "echo participant_label > {output} && unzip -l {input} {wildcards.dataset}/bids/sub-*/*T1w.nii.gz | awk '{{print $4}}' | awk -F '/' '{{print $3}}' | awk -F '-' '{{print $2}}' | tr -s '\n' | tail -n +2 | sort >> {output}"
+

@@ -572,7 +572,7 @@ rule connectome2tck:
         "mkdir -p {output} && connectome2tck -nthreads {threads} {input.tck} {input.sl_assignment} {output.tck_dir}/bundle_"
 
 rule mif2nii:
-    input: '{prefix}.mif'
-    output: '{prefix}.nii.gz'
+    input: '{root}/{{prefix}}.mif'.format(root=root)
+    output: '{root}/{{prefix}}.nii.gz'.format(root=root)
     shell:
         'mrconvert {input} {output}'

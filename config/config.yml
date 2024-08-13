@@ -1,4 +1,108 @@
 
+snakebatch: #config file for snakebatch here:
+  datasets:
+    7t: 
+      bids_dir: '/cifs/khan/users/alik/7t_fatsat_dwi/bids'
+
+
+
+  #this configures the pybids grabber - create an entry for each type of input you want to grab
+  # indexed by name of input
+  #   dictionary for each input is passed directly to pybids get()
+  #    https://bids-standard.github.io/pybids/generated/bids.layout.BIDSLayout.html#bids.layout.BIDSLayout.get
+
+  defaults:
+
+    pybids_inputs:  #can be overriden in the dataset
+      dwi:
+        filters:
+          suffix: 'dwi'
+          extension: '.nii.gz'
+          datatype: 'dwi'
+        wildcards:
+          - subject
+          - session
+          - acquisition
+          - run
+          - direction
+      t1:
+        filters:
+          suffix: 'T1w'
+          extension: '.nii.gz'
+          datatype: 'anat'
+        wildcards:
+          - subject
+          - session
+          - acquisition
+          - run
+
+
+    #this configures the options to save the BIDSLayout
+    # by default, database is not saved (uncomment to save)
+    # NOTE: pybids_db_dir must be an absolute path
+    # pybids_db_dir: '/path/to/db_dir' # Leave blank if you do not wish to use this
+    # pybids_db_reset: False # Change this to true to update the database
+
+
+    derivatives: False #will search in bids/derivatives if True; can also be path(s) to derivatives datasets - can be overriden in datasets
+
+    singularity_prefix: '/cifs/khan/shared/containers/snakemake_containers'
+
+    resources:  # can be overriden in apps
+      cores: 8
+      mem_mb: 32000
+      runtime: 360 
+      tmpdir: /tmp
+      gpus: 0
+
+    tmpdir_env: SLURM_TMPDIR  
+    shadow: 'minimal'
+
+
+
+
+  # app options below:
+
+  apps:
+    snakedwi:
+      snakebids: True
+      url: 'http://github.com/akhanf/snakedwi'
+      tag: 'master' #'v0.2.0-alpha'
+      runscript: 'snakedwi/run.py' #relative to the app repo
+      opts: ''
+      retain_subj_dirs_from:
+        - 'snakedwi'
+      input_to_filter: dwi #e.g. for --filter-dw
+      singularity_opts: '--nv'
+      resources:
+        cores: 8
+        mem_mb: 32000
+        runtime: 360 
+        gpus: 1
+
+    snakeanat:
+      snakebids: True
+      url: 'http://github.com/akhanf/snakeanat'
+      tag: 'akhanf-patch-1'
+      runscript: 'snakeanat/run.py' #relative to the app repo
+      opts: '--use-envmodules --set-threads fastsurfer_seg=4'
+      retain_subj_dirs_from:
+        - ''
+        - 'sourcedata/ciftify'
+        - 'sourcedata/fastsurfer'
+        - 'sourcedata/fastsurfer_surf'
+        - 'qc'
+      input_to_filter: t1 #e.g. for --filter-dwi
+      resources:
+        cores: 8
+        mem_mb: 16000
+        runtime: 720
+        gpus: 0
+
+
+    
+
+
 in_root: '$HOME/graham' #for cbs server
 #in_root: '/home/akhanf' #for graham
 
@@ -7,58 +111,37 @@ subsampling:
     - shell0subsampled6
     - shell1000subsampled26
     - shell2000subsampled26
-  mediumcs:
-    - shell0
-    - shell1000
-    - shell2000
   strongcs:
     - shell0
     - shell1000
     - shell2000
-  lightcs:
+  weakcsnew:
     - shell0
     - shell1000
     - shell2000
-  lightcsnomoco:
+  weakcsold:
     - shell0
     - shell1000
     - shell2000
-
-#files in one big zip file - these paths are relative to in_root defined above
-in_agg_zip: 
-  snakebatch_dwi:
-    HCP: 'projects/ctb-akhanf/cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_HCP_2023_09_23.zip'
-    LOBE: 'projects/ctb-akhanf-ab/cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_2024_03_19.zip'
-  snakebatch:
-    HCP: 'projects/ctb-akhanf-ab/cfmm-bids/Khan/LOBE/derivatives/snakebatch_HCP_snakeanat_fmriprep_2024_03_21.zip'
-    LOBE: 'projects/ctb-akhanf-ab/cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_2024_03_19.zip'
-
-in_demog_tabular:
-  HCP: 'projects/ctb-akhanf/ext-data/hcp_development/HCPDevImagingManifestBeh/ndar_subject01.txt'
-
-
   
 
 #to find paths below, use: unzip -l cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_HCP_2023_09_23.zip | less
 input_path: 
   dwi_nii: 
-    strongcs: /local/scratch/compare_dwi/P156_test_corey_diffusion/cs_strong/cb_sp2d_diff_preproc_LTE.nii.gz
-    mediumcs: '/local/scratch/compare_dwi/P156_test_corey_diffusion/cs_medium/cb_sp2d_diff_preproc_LTE.nii.gz'
-    lightcs: /local/scratch/compare_dwi/P156_test_corey_diffusion/orig_withEddyMoco/cb_sp2d_diff_preproc_LTE.nii.gz
-    lightcsnomoco: '/local/scratch/compare_dwi/P156_test_corey_diffusion/cb_sp2d_diff_cx_dndgabs_LTE.nii.gz'
-    epi: '/local/scratch/compare_dwi/out_snakedwi/snakedwi/sub-P156/dwi/sub-P156_desc-eddy_dwi.nii.gz'
+    strongcs: /cifs/khan/users/alik/7t_fatsat_dwi/strongFatSat/spiral_ufa_strongFatsatTik_preproc_LTE.nii.gz
+    weakcsnew: /cifs/khan/users/alik/7t_fatsat_dwi/weakFatSat_newRecon/spiral_ufa_weakFatsat_fatRecon_preproc_LTE.nii.gz
+    weakcsold: /cifs/khan/users/alik/7t_fatsat_dwi/weakFatSat_oldRecon/spiral_ufa_weakFatsatTik_preproc_LTE.nii.gz
+    epi: 7t/derivatives/snakedwi/snakedwi/sub-01/dwi/sub-01_desc-eddy_dwi.nii.gz
     
   dwi_mask: 
-    strongcs: /local/scratch/compare_dwi/P156_test_corey_diffusion/cs_strong/brain_mask.nii.gz
-    mediumcs: /local/scratch/compare_dwi/P156_test_corey_diffusion/cs_medium/brain_mask.nii.gz
-    lightcs: /local/scratch/compare_dwi/P156_test_corey_diffusion/orig_withEddyMoco/brain_mask.nii.gz
-    lightcsnomoco: '/local/scratch/compare_dwi/P156_test_corey_diffusion/mask_epi_resampled.nii.gz'
-    epi: '/local/scratch/compare_dwi/out_snakedwi/snakedwi/sub-P156/dwi/sub-P156_desc-brain_mask.nii.gz'
+    strongcs: /cifs/khan/users/alik/7t_fatsat_dwi/strongFatSat/brain_mask.nii.gz
+    weakcsnew: /cifs/khan/users/alik/7t_fatsat_dwi/weakFatSat_newRecon/brain_mask.nii.gz
+    weakcsold: /cifs/khan/users/alik/7t_fatsat_dwi/weakFatSat_oldRecon/brain_mask.nii.gz
+    epi: 7t/derivatives/snakedwi/snakedwi/sub-01/dwi/sub-01_desc-brain_mask.nii.gz
 
-  t1_nii: '/local/scratch/compare_dwi/out_snakedwi/snakedwi/sub-P156/anat/sub-P156_desc-preproc_T1w.nii.gz'
-  surf_gii_t1: '/home/ROBARTS/alik/graham/scratch/3_processing/snakebatch_dwi_compare_snsx/SNSX/derivatives/snakeanat/sourcedata/ciftify/sub-{subject}/T1w/fsaverage_LR32k/sub-{subject}.{hemi}.{surf}.32k_fs_LR.surf.gii'
-  surf_gii_mni: '/home/ROBARTS/alik/graham/scratch/3_processing/snakebatch_dwi_compare_snsx/SNSX/derivatives/snakeanat/sourcedata/ciftify/sub-{subject}/MNINonLinear/fsaverage_LR32k/sub-{subject}.{hemi}.{surf}.32k_fs_LR.surf.gii'
-  hippunfold_vol_tsv: 'snakebatch/{dataset}/derivatives/hippunfold/hippunfold/sub-{subject}/anat/sub-{subject}_space-cropT1w_desc-subfields_atlas-bigbrain_volumes.tsv'
+  t1_nii: '7t/derivatives/snakedwi/snakedwi/sub-P156/anat/sub-P156_desc-preproc_T1w.nii.gz'
+  surf_gii_t1: '7t/derivatives/snakeanat/sourcedata/ciftify/sub-{subject}/T1w/fsaverage_LR32k/sub-{subject}.{hemi}.{surf}.32k_fs_LR.surf.gii'
+  surf_gii_mni: '7t/derivatives/snakeanat/sourcedata/ciftify/sub-{subject}/MNINonLinear/fsaverage_LR32k/sub-{subject}.{hemi}.{surf}.32k_fs_LR.surf.gii'
 
 
 
@@ -70,16 +153,16 @@ subj_wildcards:
 
 
 datasets:
-  - lightcsnomoco
-  - lightcs
-  - mediumcs
-  - strongcs
   - epi
+  - strongcs
+  - weakcsnew
+  - weakcsold
+
 
 use_test_subjects: True
 
 test_subjects: 
- - P156
+ - '01'
 
 template_surf: 'resources/tpl-fsLR/tpl-fsLR_den-32k_hemi-{hemi}_{surf}.surf.gii'
 

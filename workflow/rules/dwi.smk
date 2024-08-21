@@ -248,13 +248,19 @@ rule dwi2response:
             suffix="response.txt",
             **config["subj_wildcards"],
         ),
+        voxels=bids(
+            root=root,
+            datatype="dwi",
+            suffix="responsevoxels.mif",
+            **config["subj_wildcards"],
+        ),
     threads: 8
     group:
         "grouped_subject"
     container:
         config["singularity"]["mrtrix"]
     shell:
-        "dwi2response dhollander {input.dwi} {output.wm_rf} {output.gm_rf} {output.csf_rf}  -nthreads {threads} -shells {params.shells} -lmax {params.lmax} -mask {input.mask}"
+        "dwi2response dhollander {input.dwi} {output.wm_rf} {output.gm_rf} {output.csf_rf}  -nthreads {threads} -shells {params.shells} -lmax {params.lmax} -mask {input.mask} -voxels {output.voxels}"
 
 
 rule dwi2fod:
@@ -434,12 +440,14 @@ rule tckgen:
         seed=rules.create_seed.output.seed,
     params:
         streamlines=config["dwi"]["sl_count"],
+        cutoff=lambda wildcards: float(wildcards.cutoff),
         seed_strategy=lambda wildcards, input: f"-seed_image {input.seed}",
     output:
         tck=bids(
             root=root,
             datatype="dwi",
             desc="iFOD2",
+            cutoff="{cutoff}",
             suffix="tractography.tck",
             **config["subj_wildcards"],
         ),
@@ -451,7 +459,7 @@ rule tckgen:
     container:
         config["singularity"]["mrtrix"]
     shell:
-        "tckgen -nthreads {threads} -algorithm iFOD2 -mask {input.mask} {params.seed_strategy} -select {params.streamlines} {input.wm_fod} {output.tck}"
+        "tckgen -nthreads {threads} -algorithm iFOD2 -mask {input.mask} {params.seed_strategy} -cutoff {params.cutoff} -select {params.streamlines} {input.wm_fod} {output.tck}"
 
 
 rule tcksift2:
@@ -464,6 +472,7 @@ rule tcksift2:
             root=root,
             datatype="dwi",
             desc="sift2",
+            cutoff="{cutoff}",
             suffix="tckweights.txt",
             **config["subj_wildcards"],
         ),
@@ -471,6 +480,7 @@ rule tcksift2:
             root=root,
             datatype="dwi",
             desc="sift2",
+            cutoff="{cutoff}",
             suffix="mu.txt",
             **config["subj_wildcards"],
         ),
@@ -502,6 +512,7 @@ rule tck2connectome:
             root=root,
             datatype="dwi",
             atlas="{atlas}",
+            cutoff="{cutoff}",
             suffix="streamassign.txt",
             **config["subj_wildcards"],
         ),
@@ -509,6 +520,7 @@ rule tck2connectome:
             root=root,
             datatype="dwi",
             atlas="{atlas}",
+            cutoff="{cutoff}",
             suffix="struc.conn.csv",
             **config["subj_wildcards"],
         ),
@@ -521,6 +533,43 @@ rule tck2connectome:
         "tck2connectome -nthreads {threads} -tck_weights_in {input.tckweights} -out_assignments {output.sl_assignment} -zero_diagonal -symmetric {input.tck} {input.parcellation} {output.conn}"
 
 
+rule tck2connectome_fa:
+    input:
+        tck=rules.tckgen.output.tck,
+        parcellation=bids(
+            root=root,
+            datatype="dwi",
+            atlas="{atlas}",
+            suffix="dseg.nii.gz",
+            **config["subj_wildcards"],
+        ),
+        fa=bids(
+            root=root,
+            datatype="dwi",
+            suffix="fa.mif",
+            **config["subj_wildcards"],
+        ),
+    output:
+        conn=bids(
+            root=root,
+            datatype="dwi",
+            atlas="{atlas}",
+            cutoff="{cutoff}",
+            suffix="strucFA.conn.csv",
+            **config["subj_wildcards"],
+        ),
+    threads: 8
+    group:
+        "grouped_subject"
+    shadow: 'minimal'
+    container:
+        config["singularity"]["mrtrix"]
+    shell:
+        "tcksample -nthreads {threads} {input.tck} {input.fa} mean_FA_per_streamline.csv -stat_tck mean && "
+        "tck2connectome -nthreads {threads}  -zero_diagonal -symmetric {input.tck} {input.parcellation} {output.conn} -scale_file mean_FA_per_streamline.csv -stat_edge mean "
+
+
+
 rule vis_struct_connectome:
     """this rule doesn't depend on the cifti's from the func pipeline"""
     input:
@@ -528,17 +577,21 @@ rule vis_struct_connectome:
             root=root,
             datatype="dwi",
             atlas="{atlas}",
-            suffix="struc.conn.csv",
+            cutoff="{cutoff}",
+            suffix="{struc}.conn.csv",
             **config["subj_wildcards"],
         ),
     params:
-        title='Conn {dataset}'
+        title='Conn {dataset}',
+        vmin=lambda wildcards: 0 if wildcards.struc == 'strucFA' else 0.0000001,
+        vmax=lambda wildcards: 1 if wildcards.struc == 'strucFA' else 500
     output:
         png=bids(
             root=root,
             datatype="dwi",
             atlas="{atlas}",
-            suffix="struc.conn.matrix.png",
+            cutoff="{cutoff}",
+            suffix="{struc}.conn.matrix.png",
             **config["subj_wildcards"],
         ),
     script:
@@ -552,6 +605,7 @@ rule connectome2tck:
             root=root,
             datatype="dwi",
             atlas="{atlas}",
+            cutoff="{cutoff}",
             suffix="streamassign.txt",
             **config["subj_wildcards"],
         ),
@@ -560,6 +614,7 @@ rule connectome2tck:
             root=root,
             datatype="dwi",
             atlas="{atlas}",
+            cutoff="{cutoff}",
             suffix="struc.bundles",
             **config["subj_wildcards"],
         )),
@@ -570,6 +625,45 @@ rule connectome2tck:
         config["singularity"]["mrtrix"]
     shell:
         "mkdir -p {output} && connectome2tck -nthreads {threads} {input.tck} {input.sl_assignment} {output.tck_dir}/bundle_"
+
+
+rule connectome2exemplartck:
+    # Smith, R. E.; Tournier, J.-D.; Calamante, F. & Connelly, A. The effects of SIFT on the reproducibility and biological accuracy of the structural connectome. NeuroImage, 2015, 104, 253-265
+    input:
+        tck=rules.tckgen.output.tck,
+        sl_assignment=bids(
+            root=root,
+            datatype="dwi",
+            atlas="{atlas}",
+            cutoff="{cutoff}",
+            suffix="streamassign.txt",
+            **config["subj_wildcards"],
+        ),
+        parcellation=bids(
+            root=root,
+            datatype="dwi",
+            atlas="{atlas}",
+            suffix="dseg.nii.gz",
+            **config["subj_wildcards"],
+        ),
+
+    output:
+        tck=bids(
+            root=root,
+            datatype="dwi",
+            atlas="{atlas}",
+            cutoff="{cutoff}",
+            suffix="struc.exemplars.tck",
+            **config["subj_wildcards"],
+        ),
+    threads: 8
+    group:
+        "grouped_subject"
+    container:
+        config["singularity"]["mrtrix"]
+    shell:
+        "connectome2tck -nthreads {threads} {input.tck} {input.sl_assignment} {output.tck} -files single -exemplars {input.parcellation}"
+
 
 rule mif2nii:
     input: '{root}/{{prefix}}.mif'.format(root=root)

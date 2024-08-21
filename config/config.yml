@@ -79,13 +79,14 @@ snakebatch: #config file for snakebatch here:
         mem_mb: 32000
         runtime: 360 
         gpus: 1
-
+    
+   
     snakeanat:
       snakebids: True
       url: 'http://github.com/akhanf/snakeanat'
       tag: 'akhanf-patch-1'
       runscript: 'snakeanat/run.py' #relative to the app repo
-      opts: '--use-envmodules --set-threads fastsurfer_seg=4'
+      opts: '--use-envmodules --set-threads fastsurfer_seg=4 --keep-incomplete'
       retain_subj_dirs_from:
         - ''
         - 'sourcedata/ciftify'
@@ -108,38 +109,43 @@ in_root: '$HOME/graham' #for cbs server
 
 subsampling:
   epi:
+    - shell0
+    - shell1000
+    - shell2000
+  episubsampled:
     - shell0subsampled6
     - shell1000subsampled26
     - shell2000subsampled26
-  strongcs:
+  strongfatsat:
     - shell0
     - shell1000
     - shell2000
-  weakcsnew:
+  weakfatsatnew:
     - shell0
     - shell1000
     - shell2000
-  weakcsold:
+  weakfatsatold:
     - shell0
     - shell1000
     - shell2000
-  
 
 #to find paths below, use: unzip -l cfmm-bids/Khan/LOBE/derivatives/snakebatch_LOBE_HCP_2023_09_23.zip | less
 input_path: 
   dwi_nii: 
-    strongcs: /cifs/khan/users/alik/7t_fatsat_dwi/strongFatSat/spiral_ufa_strongFatsatTik_preproc_LTE.nii.gz
-    weakcsnew: /cifs/khan/users/alik/7t_fatsat_dwi/weakFatSat_newRecon/spiral_ufa_weakFatsat_fatRecon_preproc_LTE.nii.gz
-    weakcsold: /cifs/khan/users/alik/7t_fatsat_dwi/weakFatSat_oldRecon/spiral_ufa_weakFatsatTik_preproc_LTE.nii.gz
+    strongfatsat: /cifs/khan/users/alik/7t_fatsat_dwi/strongFatSat/spiral_ufa_strongFatsatTik_preproc_LTE.nii.gz
+    weakfatsatnew: /cifs/khan/users/alik/7t_fatsat_dwi/weakFatSat_newRecon/spiral_ufa_weakFatsat_fatRecon_preproc_LTE.nii.gz
+    weakfatsatold: /cifs/khan/users/alik/7t_fatsat_dwi/weakFatSat_oldRecon/spiral_ufa_weakFatsatTik_preproc_LTE.nii.gz
     epi: 7t/derivatives/snakedwi/snakedwi/sub-01/dwi/sub-01_desc-eddy_dwi.nii.gz
+    episubsampled: 7t/derivatives/snakedwi/snakedwi/sub-01/dwi/sub-01_desc-eddy_dwi.nii.gz
     
   dwi_mask: 
-    strongcs: /cifs/khan/users/alik/7t_fatsat_dwi/strongFatSat/brain_mask.nii.gz
-    weakcsnew: /cifs/khan/users/alik/7t_fatsat_dwi/weakFatSat_newRecon/brain_mask.nii.gz
-    weakcsold: /cifs/khan/users/alik/7t_fatsat_dwi/weakFatSat_oldRecon/brain_mask.nii.gz
+    strongfatsat: /cifs/khan/users/alik/7t_fatsat_dwi/strongFatSat/brain_mask.nii.gz
+    weakfatsatnew: /cifs/khan/users/alik/7t_fatsat_dwi/weakFatSat_newRecon/brain_mask.nii.gz
+    weakfatsatold: /cifs/khan/users/alik/7t_fatsat_dwi/weakFatSat_oldRecon/brain_mask.nii.gz
     epi: 7t/derivatives/snakedwi/snakedwi/sub-01/dwi/sub-01_desc-brain_mask.nii.gz
+    episubsampled: 7t/derivatives/snakedwi/snakedwi/sub-01/dwi/sub-01_desc-brain_mask.nii.gz
 
-  t1_nii: '7t/derivatives/snakedwi/snakedwi/sub-P156/anat/sub-P156_desc-preproc_T1w.nii.gz'
+  t1_nii: '7t/derivatives/snakedwi/snakedwi/sub-{subject}/anat/sub-{subject}_desc-preproc_T1w.nii.gz'
   surf_gii_t1: '7t/derivatives/snakeanat/sourcedata/ciftify/sub-{subject}/T1w/fsaverage_LR32k/sub-{subject}.{hemi}.{surf}.32k_fs_LR.surf.gii'
   surf_gii_mni: '7t/derivatives/snakeanat/sourcedata/ciftify/sub-{subject}/MNINonLinear/fsaverage_LR32k/sub-{subject}.{hemi}.{surf}.32k_fs_LR.surf.gii'
 
@@ -154,9 +160,10 @@ subj_wildcards:
 
 datasets:
   - epi
-  - strongcs
-  - weakcsnew
-  - weakcsold
+  - episubsampled
+  - strongfatsat
+  - weakfatsatnew
+  - weakfatsatold
 
 
 use_test_subjects: True

@@ -53,7 +53,7 @@ include: "rules/plotting.smk"
 rule all_dwi_conn:
     input:
         get_dwi_conn_csv_targets(),
-#    default_target: True
+    default_target: True
 
 
 

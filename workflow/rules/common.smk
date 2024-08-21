@@ -7,11 +7,31 @@ def get_dwi_conn_csv_targets():
                     root=root,
                     datatype="dwi",
                     atlas="{atlas}",
-                    suffix="struc.conn.matrix.png",
+                    cutoff="{cutoff}",
+                    suffix="{struc}.conn.matrix.png",
                     **config["subj_wildcards"],
                 ),
                 subject=subjects,
                 dataset=dataset,
+                struc=['struc','strucFA'],
+                cutoff=['0.1','0.05','0.01'],
+                atlas=config["atlases"],
+            )
+        )
+        targets.extend(
+            expand(
+                bids(
+                    root=root,
+                    datatype="dwi",
+                    atlas="{atlas}",
+                    cutoff="{cutoff}",
+                    suffix="struc.exemplars.tck",
+                    **config["subj_wildcards"],
+                ),
+                subject=subjects,
+                dataset=dataset,
+                struc=['struc','strucFA'],
+                cutoff=['0.1','0.05','0.01'],
                 atlas=config["atlases"],
             )
         )

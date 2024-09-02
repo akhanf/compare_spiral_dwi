@@ -148,7 +148,7 @@ input_path:
   t1_nii: '7t/derivatives/snakedwi/snakedwi/sub-{subject}/anat/sub-{subject}_desc-preproc_T1w.nii.gz'
   surf_gii_t1: '7t/derivatives/snakeanat/sourcedata/ciftify/sub-{subject}/T1w/fsaverage_LR32k/sub-{subject}.{hemi}.{surf}.32k_fs_LR.surf.gii'
   surf_gii_mni: '7t/derivatives/snakeanat/sourcedata/ciftify/sub-{subject}/MNINonLinear/fsaverage_LR32k/sub-{subject}.{hemi}.{surf}.32k_fs_LR.surf.gii'
-
+  fs_aseg: '7t/derivatives/freesurfer/sub-{subject}/mri/aparc+aseg.mgz'
 
 
 #this is the output folder

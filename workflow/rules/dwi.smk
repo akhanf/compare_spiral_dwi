@@ -208,12 +208,28 @@ rule warp_t1_to_dwi:
 
 
 
-
-
+rule fivettgen:
+    input:
+        aseg=config['input_path']['fs_aseg']
+    output:
+        fivett=bids(
+            root=root,
+            datatype="dwi",
+            desc="freesurfer",
+            suffix="5tt.mif",
+            **config["subj_wildcards"],
+        ),
+    threads: 8
+    group:
+        "grouped_subject"
+    container:
+        config["singularity"]["mrtrix"]
+    shadow: 'minimal'
+    shell:
+        "5ttgen freesurfer {input} {output} -nthreads {threads}"
 
 
 rule dwi2response:
-    # Dhollander, T.; Mito, R.; Raffelt, D. & Connelly, A. Improved white matter response function estimation for 3-tissue constrained spherical deconvolution. Proc Intl Soc Mag Reson Med, 2019, 555
     input:
         dwi=bids(
             root=root,
@@ -221,7 +237,7 @@ rule dwi2response:
             suffix="dwi.mif",
             **config["subj_wildcards"],
         ),
-
+        fivett=rules.fivettgen.output.fivett,
         mask=lambda wildcards: config["input_path"]["dwi_mask"][wildcards.dataset],
     params:
         shells=",".join(config["dwi"]["shells"]),
@@ -260,7 +276,7 @@ rule dwi2response:
     container:
         config["singularity"]["mrtrix"]
     shell:
-        "dwi2response dhollander {input.dwi} {output.wm_rf} {output.gm_rf} {output.csf_rf}  -nthreads {threads} -shells {params.shells} -lmax {params.lmax} -mask {input.mask} -voxels {output.voxels}"
+        "dwi2response msmt_5tt {input.dwi} {input.fivett} {output.wm_rf} {output.gm_rf} {output.csf_rf}  -nthreads {threads} -shells {params.shells} -lmax {params.lmax} -mask {input.mask} -voxels {output.voxels}"
 
 
 rule dwi2fod:
@@ -425,7 +441,6 @@ def get_tckgen_runtime(wildcards,threads):
  
 
 rule tckgen:
-    # Tournier, J.-D.; Calamante, F. & Connelly, A. Improved probabilistic streamlines tractography by 2nd order integration over fibre orientation distributions. Proceedings of the International Society for Magnetic Resonance in Medicine, 2010, 1670
     input:
         wm_fod=rules.mtnormalise.output.wm_fod,
         dwi=bids(
